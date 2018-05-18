@@ -14,7 +14,7 @@ def pickleLoad(filename):
     Parameters:
     parameter -- description
     """
-    filehandler = open("obj/" + filename + ".obj", 'rb')
+    filehandler = open(path(filename), 'rb')
     object = pickle.load(filehandler)
     return object
 
@@ -28,6 +28,15 @@ def pickleSave(object, filename):
     Parameters:
     parameter -- description
     """
-    os.makedirs("obj/" + filename)
-    filehandler = open("obj/" + filename + ".obj", 'wb')
-    pickle.dump(object, filehandler)
+    print("Saving " + path(filename))
+    try:
+        os.makedirs(path(filename)[:path(filename).rindex('/')])
+    except FileExistsError:
+        pass
+    filehandler = open(path(filename), 'wb')
+    inst = pickle.Pickler(filehandler)
+    inst.dump(object)
+    inst.clear_memo()
+
+def path(file):
+    return "obj/" + file.replace(".","_").replace("\\","_") + ".obj"
