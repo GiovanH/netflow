@@ -19,7 +19,7 @@ def opencsv(globstr, args):
             i = 0
             for row in reader:
                 row['filename'] = filename
-                sheet.append(row)
+                sheet.append(dict(row))
                 i += 1
                 args.cap -= 1
                 if (args.cap == 0):
@@ -29,6 +29,6 @@ def opencsv(globstr, args):
                     sys.stdout.flush()
         print(']')
         #util.pickleSave(sheet, filename)
-        data.append(sheet)
+        data += sheet
     #print(data)
     return data

@@ -1,6 +1,8 @@
 #!/bin/python3
 #Seth Giovanetti
 
+import netflow_util as util
+
 def histo(data, field):
     import numpy as np
     import matplotlib.pyplot as plt
@@ -27,19 +29,17 @@ def cumu(data, field):
     import matplotlib.pyplot as plt
     graphdata = []
     try:
-        graphdatay = np.array([int(point[field]) for sheet in data for point in sheet])
-        graphdatax = [point['_time'] for sheet in data for point in sheet]
-        print([graphdatax,graphdatay])
-        #Sort by time
+        data = util.combine_data(data, '_time')
+        graphdatay = [int(point[field]) for point in data]
+        graphdatax = [point['_time'] for point in data]
         graphdatax, graphdatay = (np.array(t) for t in zip(*sorted(zip(graphdatax, graphdatay))))
-        print([graphdatax,graphdatay])
+        print(graphdatax,graphdatay)
     except KeyError:
         print("No such field \"" + field + "\"")
         print("Valid fields:")
         print(', '.join([i for i in data[0][0].keys()]))
         return
     #n_bins = 50
-
     # Cumulative counts:
     plt.step(graphdatax,np.cumsum(graphdatay))
     #sorted_data = np.sort(graphdatay)  # Or data.sort(), if data can be modified
