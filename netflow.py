@@ -6,6 +6,7 @@ import traceback
 import sys
 
 import netflow_csv as ncsv
+import netflow_graphing as ngraph
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,epilog="""
 netflow.py
@@ -40,28 +41,11 @@ def oniondump(data):
         for r in s:
             print(r)
 
-def histo(data, field):
-    import numpy as np
-    import matplotlib.pyplot as plt
-    graphdata = []
-    try:
-        graphdata = [point[field] for sheet in data for point in sheet]
-    except KeyError:
-        print("No such field \"" + field + "\"")
-        print("Valid fields:")
-        print(', '.join([i for i in data[0][0].keys()]))
-        return
-    n, bins, patches = plt.hist(graphdata, 50, density=True, facecolor='g', alpha=0.75)
-    plt.xlabel(field)
-    plt.ylabel('Probability')
-    plt.title('Histogram of ' + field)
-    plt.grid(True)
-    plt.show()
-
 options = {
     "dump" : (lambda: dump(data)),
     "oniondump" : (lambda: oniondump(data)),
-    "plot" : (lambda: histo(data, args.field)),
+    "hist" : (lambda: ngraph.histo(data, args.field)),
+    "cd" : (lambda: ngraph.cumu(data, args.field)),
     "c" : (lambda: print("C!"))
 }
 
@@ -69,5 +53,7 @@ try:
     for c in args.cmds:
         print(c)
         options[c]()
-except Exception:
-    traceback.print_exc(file=sys.stdout)
+except KeyError:
+    print("No such command " + c)
+    print("Valid commands are:")
+    print(", ".join(key for key in options.keys()))
