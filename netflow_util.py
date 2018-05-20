@@ -4,23 +4,29 @@
 import pickle
 import os
 
-def combine_data(data, sortField):
-    #step 1: sort data by the combined field, eg 'user'
-    print({'data':data,'sortField':sortField})
+def combine_data(data, equals, sortField):
+    #Combines records in data based on the equals function.
+    #Only sequential entries after sorting by sortfield will be combined.
     data_sorted = sorted(data, key=lambda k: k[sortField])
     p = data_sorted.pop()
     groups = []
     group = [p]
-    group_sort = p[sortField]
+    group_sort = p
     while len(data_sorted) is not 0:
         p = data_sorted.pop()
-        if (p[sortField] == group_sort):
-            group.append(p)
-        else:
-            groups.append(group)
-            group = [p]
-            group_sort = p[sortField]
-    
+        try:
+            if (equals(group_sort, p)):
+                group.append(p)
+            else:
+                groups.append(group)
+                group = [p]
+                group_sort = p
+        except TypeError:
+            print("Group_sort:")
+            print(group_sort)
+            print("New pop:")
+            print(p)
+            raise
     groups.append(group)
     finaldata = []
     for l in groups:

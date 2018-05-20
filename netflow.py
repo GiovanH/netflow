@@ -46,6 +46,7 @@ options = {
     "oniondump" : (lambda: oniondump(data)),
     "hist" : (lambda: ngraph.histo(data, args.field)),
     "cd" : (lambda: ngraph.cumu(data, args.field)),
+    "cumutop" : (lambda: ngraph.cumutop(data)),
     "c" : (lambda: print("C!"))
 }
 
