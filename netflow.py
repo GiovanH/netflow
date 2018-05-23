@@ -49,6 +49,7 @@ options = {
     #TODO:VERIFY FLOW DIRECTION!!!
     "top_contributors_out" : (lambda: ngraph.top_contributors(data, args.num,'0')),
     "top_contributors_in" : (lambda: ngraph.top_contributors(data, args.num,'1')),
+    "tcnc" : (lambda: ngraph.top_contributors_noncum(data, args.num,'1')),
     "c" : (lambda: print("C!"))
 }
 
