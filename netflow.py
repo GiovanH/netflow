@@ -15,6 +15,7 @@ netflow.py
 parser.add_argument("files", help="Files to parse (glob)")
 parser.add_argument('--reset','-r', action='store_true')
 parser.add_argument('--cap', type=int, default=-1, help='Maximum entries to process')
+parser.add_argument('--num', type=int, default=20, help='Top N entries')
 parser.add_argument('--field', type=str, default='bytes_in', help='Field of interest')
 parser.add_argument("cmds", nargs='*', help="Commands to execute in sequence.")
 
@@ -45,8 +46,9 @@ options = {
     "dump" : (lambda: dump(data)),
     "oniondump" : (lambda: oniondump(data)),
     "hist" : (lambda: ngraph.histo(data, args.field)),
-    "cd" : (lambda: ngraph.cumu(data, args.field)),
-    "cumutop" : (lambda: ngraph.cumutop(data)),
+    #TODO:VERIFY FLOW DIRECTION!!!
+    "top_contributors_out" : (lambda: ngraph.top_contributors(data, args.num,'0')),
+    "top_contributors_in" : (lambda: ngraph.top_contributors(data, args.num,'1')),
     "c" : (lambda: print("C!"))
 }
 

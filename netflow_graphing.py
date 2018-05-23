@@ -3,12 +3,23 @@
 
 import netflow_util as util
 
+global_args = {}
+
+def savefig(type, plt):
+    import datetime
+    import os
+    try:
+        os.makedirs('./img/')
+    except FileExistsError:
+        pass
+    plt.savefig('./img/' + type + '_' + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p")) + '.png', bbox_inches="tight")
+
 def histo(data, field):
     import numpy as np
     import matplotlib.pyplot as plt
     graphdata = []
     try:
-        graphdata = [point[field] for sheet in data for point in sheet]
+        graphdata = [point[field] for point in data]
     except KeyError:
         print("No such field \"" + field + "\"")
         print("Valid fields:")
@@ -24,14 +35,16 @@ def histo(data, field):
     plt.show()
 
 
-def cumutop(indata):
+def top_contributors(indata, topn, flowdir):
     import numpy as np
     import matplotlib.pyplot as plt
     graphdata = []
-    field = 'bytes_in' #What field our y-axis data comes from
-    topn = 50 #We care about the top N records
+    field = 'bytes_in'
     data = indata
     try:
+        #Filter records by flow direction
+        data = [i for i in data if i['flow_dir'] == flowdir ]
+        
         #Group records by src_ip
         data = util.combine_data(data, lambda a,b: a['src_ip']==b['src_ip'], 'src_ip')
         
@@ -54,49 +67,18 @@ def cumutop(indata):
         return
     
     # Cumulative counts:
-    plt.plot(list(range(1,topn+1)), np.cumsum(graphdatay))
-    #sorted_data = np.sort(graphdatay)  # Or data.sort(), if data can be modified
-    #plt.step(sorted_data,np.arange(sorted_data.size))
+    plt.plot(list(range(1,len(graphdatax)+1)), np.cumsum(graphdatay))
 
     #Axis labels and formatting
-    plt.ylabel('Total')
-    plt.title('Cumulative ' + field)
+    plt.ylabel('Total ' + field)
+    plt.xlabel('Top contributors')
+    #Todo: Verify flow dir
+    plt.title('Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing'))
 
     print('Top ' + str(topn) + ' contributors: \n' + '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0,len(graphdatax))]))
     plt.ticklabel_format(style='plain',axis='y',useLocale=True)
     
     #Display
-    print("See window")
-    plt.show()
-
-
-def cumu(data, field):
-    import numpy as np
-    import matplotlib.pyplot as plt
-    graphdata = []
-    try:
-        #Compress data
-        data = util.combine_data(data, lambda a,b: a['_time'][:-12]==b['_time'][:-12], '_time')
-
-        #Create seperate X and Y arrays based on sort fields        
-        graphdatay = [int(point[field]) for point in data]
-        graphdatax = [point['_time'] for point in data]
-
-        #Sort data by time? Not needed with data compression
-        #graphdatax, graphdatay = (np.array(t) for t in zip(*sorted(zip(graphdatax, graphdatay))))
-        print(graphdatax,graphdatay)
-    except KeyError:
-        print("No such field \"" + field + "\"")
-        print("Valid fields:")
-        print(', '.join([i for i in data[0].keys()]))
-        return
-    # Cumulative counts:
-    plt.step(graphdatax,np.cumsum(graphdatay))
-
-    #Axis labels and formatting
-    plt.ylabel('Total')
-    plt.title('Cumulative ' + field)
-
-    #Display
+    savefig('top_contributors_'+flowdir,plt)
     print("See window")
     plt.show()
