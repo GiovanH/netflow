@@ -2,6 +2,7 @@
 #Seth Giovanetti
 
 import netflow_util as util
+import copy
 
 global_args = {}
 
@@ -20,7 +21,7 @@ def top_contributors(indata, topn, flowdir):
     import matplotlib.pyplot as plt
     graphdata = []
     field = 'bytes_in'
-    data = dict(indata)
+    data = copy.deepcopy(indata)
     try:
         #Filter records by flow direction
         data = [i for i in data if i['flow_dir'] == flowdir ]
@@ -68,7 +69,7 @@ def top_contributors_noncum(indata, topn, flowdir):
     import matplotlib.pyplot as plt
     graphdata = []
     field = 'bytes_in'
-    data = dict(indata)
+    data = copy.deepcopy(indata)
     try:
         #Filter records by flow direction
         data = [i for i in data if i['flow_dir'] == flowdir ]

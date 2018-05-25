@@ -45,11 +45,10 @@ def oniondump(data):
 options = {
     "dump" : (lambda: dump(data)),
     "oniondump" : (lambda: oniondump(data)),
-    "hist" : (lambda: ngraph.histo(data, args.field)),
-    #TODO:VERIFY FLOW DIRECTION!!!
+    "hist_out" : (lambda: ngraph.top_contributors_noncum(data, args.num,'0')),
+    "hist_in" : (lambda: ngraph.top_contributors_noncum(data, args.num,'1')),    #TODO:VERIFY FLOW DIRECTION!!!
     "top_contributors_out" : (lambda: ngraph.top_contributors(data, args.num,'0')),
     "top_contributors_in" : (lambda: ngraph.top_contributors(data, args.num,'1')),
-    "tcnc" : (lambda: ngraph.top_contributors_noncum(data, args.num,'1')),
     "c" : (lambda: print("C!"))
 }
 
