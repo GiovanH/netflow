@@ -53,7 +53,6 @@ def top_contributors(indata, topn, flowdir):
     #Axis labels and formatting
     plt.ylabel('Total ' + field)
     plt.xlabel('Top contributors')
-    #Todo: Verify flow dir
     plt.title('Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing'))
 
     print('Top ' + str(topn) + ' contributors: \n' + '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0,len(graphdatax))]))
@@ -101,7 +100,6 @@ def top_contributors_noncum(indata, topn, flowdir):
     #Axis labels and formatting
     plt.ylabel(field)
     plt.xlabel('Top N contributor')
-    #Todo: Verify flow dir
     plt.title('Traffic, ' + ('incoming' if flowdir == '1' else 'outgoing'))
 
     print('Top ' + str(topn) + ' contributors: \n' + '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0,len(graphdatax))]))
