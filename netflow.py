@@ -15,8 +15,9 @@ netflow.py
 parser.add_argument("files", help="Files to parse (glob)")
 parser.add_argument('--reset','-r', action='store_true')
 parser.add_argument('--cap', type=int, default=-1, help='Maximum entries to process')
-parser.add_argument('--num', type=int, default=20, help='Top N entries')
-parser.add_argument('--field', type=str, default='bytes_in', help='Field of interest')
+parser.add_argument('--num', type=int, default=20, help='Top N entries, if applicable')
+parser.add_argument('--field', type=str, default='bytes_in', help='Field of interest, if applicable')
+parser.add_argument('--percent', type=float, default=20, help='Percent, if applicable')
 parser.add_argument("cmds", nargs='*', help="Commands to execute in sequence.")
 
 args = parser.parse_args()
@@ -49,6 +50,8 @@ options = {
     "hist_in" : (lambda: ngraph.top_contributors_noncum(data, args.num,'1')),
     "top_contributors_out" : (lambda: ngraph.top_contributors(data, args.num,'0')),
     "top_contributors_in" : (lambda: ngraph.top_contributors(data, args.num,'1')),
+    "top_percent_in" : (lambda: ngraph.top_contributors_percent(data, args.percent,'1')),
+    "top_percent_out" : (lambda: ngraph.top_contributors_percent(data, args.percent,'0')),
     "c" : (lambda: print("C!"))
 }
 
