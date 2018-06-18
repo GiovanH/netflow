@@ -2,7 +2,9 @@
 #Seth Giovanetti
 
 import netflow_util as util
-import copy
+
+import numpy as np
+import matplotlib.pyplot as plt
 
 global_args = {}
 
@@ -15,13 +17,11 @@ def savefig(type, plt):
         pass
     plt.savefig('./img/' + type + '_' + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p")) + '.png', bbox_inches="tight")
 
-    
-def top_contributors_percent(indata, percent, flowdir):
-    import numpy as np
-    import matplotlib.pyplot as plt
-    graphdata = []
+def doGraph(x,y):
+    print()
+
+def top_contributors_percent(predata, percent, flowdir):
     field = 'bytes_in'
-    predata = copy.deepcopy(indata)
     try:
         #Filter records by flow direction
         predata = [i for i in predata if i['flow_dir'] == flowdir ]
@@ -45,7 +45,7 @@ def top_contributors_percent(indata, percent, flowdir):
         
         #Map included/total ratio while adding
         included = 0
-        while included < total*(percent/100):
+        while len(predata) > 0 and included < total*(percent/100):
             newrecord = predata.pop()
             included += newrecord[field]
             data.append(newrecord)
@@ -62,6 +62,15 @@ def top_contributors_percent(indata, percent, flowdir):
         print(', '.join([i for i in data[0].keys()]))
         return
     
+    if global_args.regress:
+        from scipy import stats
+        gradient, intercept, r_value, p_value, std_err = stats.linregress(list(range(1,len(graphdatax)+1)),graphdatay)
+        mn=np.min(graphdatax)
+        mx=np.max(graphdatax)
+        x1=np.linspace(mn,mx,500)
+        y1=gradient*x1+intercept
+        plt.plot(x1,y1,'-r')
+    
     # Cumulative counts:
     plt.plot(list(range(1,len(graphdatax)+1)), np.cumsum(graphdatay))
 
@@ -74,16 +83,12 @@ def top_contributors_percent(indata, percent, flowdir):
     plt.ticklabel_format(style='plain',axis='y',useLocale=True)
     
     #Display
-    savefig('top_contributors_'+flowdir,plt)
+    savefig('top_contributors_percent_'+flowdir,plt)
     print("See window")
     plt.show()
 
-def top_contributors(indata, topn, flowdir):
-    import numpy as np
-    import matplotlib.pyplot as plt
-    graphdata = []
+def top_contributors(data, topn, flowdir):
     field = 'bytes_in'
-    data = copy.deepcopy(indata)
     try:
         #Filter records by flow direction
         data = [i for i in data if i['flow_dir'] == flowdir ]
@@ -125,12 +130,9 @@ def top_contributors(indata, topn, flowdir):
     print("See window")
     plt.show()
 
-def top_contributors_noncum(indata, topn, flowdir):
-    import numpy as np
-    import matplotlib.pyplot as plt
+def top_contributors_noncum(data, topn, flowdir):
     graphdata = []
     field = 'bytes_in'
-    data = copy.deepcopy(indata)
     try:
         #Filter records by flow direction
         data = [i for i in data if i['flow_dir'] == flowdir ]

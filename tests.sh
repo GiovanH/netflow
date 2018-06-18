@@ -1,1 +1,3 @@
-"C:/ProgramData/Anaconda3/python.exe" netflow.py --num 50 "../20180110/*0.csv" top_contributors_in top_contributors_out
+#!/bin/bash
+
+"C:/ProgramData/Anaconda3/python.exe" netflow.py "../20180110/*.csv" top_percent_in top_percent_out > log.log

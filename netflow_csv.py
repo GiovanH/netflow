@@ -29,6 +29,11 @@ def opencsv(globstr, args):
                     sys.stdout.flush()
         print(']')
         #util.pickleSave(sheet, filename)
+        if args.compress_field is not None:
+            sheet = util.combine_data(sheet, lambda a,b: a[args.compress_field]==b[args.compress_field], args.compress_field)
+        if args.compress_size is not None:
+            for record in sheet:
+                record['bytes_in'] = int(record['bytes_in'])/args.compress_size
         data += sheet
     #print(data)
     return data
