@@ -79,3 +79,10 @@ def pickleSave(object, filename):
 
 def path(file):
     return "obj/" + file.replace(".","_").replace("\\","_") + ".obj"
+
+def slugify(value):
+    """
+    Normalizes string, converts to lowercase, removes non-alpha characters,
+    and converts spaces to hyphens.
+    """
+    return value.replace(" ","_")

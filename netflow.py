@@ -50,7 +50,11 @@ def oniondump(data):
     
 
 options = {
-    "dump" : (lambda: dump(copy.deepcopy(data))),
+    "dump" : (
+		lambda: dump(
+			copy.deepcopy(data)
+		)
+	),
     "oniondump" : (lambda: oniondump(copy.deepcopy(data))),
     "hist_out" : (lambda: ngraph.top_contributors_noncum(copy.deepcopy(data), args.num,'0')),
     "hist_in" : (lambda: ngraph.top_contributors_noncum(copy.deepcopy(data), args.num,'1')),
