@@ -16,6 +16,7 @@ netflow.py
 parser.add_argument("files", help="Files to parse (glob)")
 parser.add_argument('--cap', type=int, default=-1, help='Maximum entries to process')
 parser.add_argument('--regress','-r', action='store_true')
+parser.add_argument('--whois', action='store_true')
 parser.add_argument('--num', type=int, default=20, help='Top N entries, if applicable')
 parser.add_argument('--field', type=str, default='bytes_in', help='Field of interest, if applicable')
 parser.add_argument('--percent', type=float, default=20, help='Percent, if applicable')

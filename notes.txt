@@ -2,9 +2,15 @@ Flow direction:
 Incoming traffic is 1
 Outgoing traffic is 0
 
-Run whois on ip addresses for more insightful logs
-Check patterns against Zipf's law
-
 Measure traffic by top % instead of top N records. Eg, the top N users account for the top 15% of traffic, where the supplied paramter is 15%.
+
+
+Draw graphs for destinations as well as sources.
+Build a cache for whois info.
+Run whois on ip addresses for more insightful logs. Look at top-level ip block info from whois. Convert IP blocks to binary for simple range comparisons.
+
+Find the diameter of the network using traceroute
+
+Check patterns against Zipf's law
 
 Research methods of anonymizing data

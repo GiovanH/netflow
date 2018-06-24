@@ -2,6 +2,7 @@
 #Seth Giovanetti
 
 import netflow_util as util
+import netflow_whois as whois
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -37,7 +38,7 @@ def doGraph(title,xlabel,x,ylabel,y):
     
     plt.ticklabel_format(style='plain',axis='y',useLocale=True)
     #Display
-    savefig(util.slugify(title) + "_" + globalargs.files.replace(".","").replace("\\","_").replace("/","_"), plt)
+    savefig(util.slugify(title) + "_" + util.slugify(global_args.files), plt)
     print("See window")
     plt.show()
 
@@ -84,6 +85,21 @@ def top_contributors_percent(predata, percent, flowdir):
         print("Valid fields:")
         print(', '.join([i for i in data[0].keys()]))
         return
+    
+    if (global_args.whois):
+        ip_2_owner = whois.getOwnerPairing(graphdatax);
+        
+        print(
+            'Top ' + str(percent) + '% of contributors: \n' + '\n'.join(
+                [graphdatax[i] + "\t" + str(graphdatay[i]) + "\t" + str(ip_2_owner[graphdatax[i]]) for i in range(0,len(graphdatax))]
+            )
+        )
+    else:
+        print(
+            'Top ' + str(percent) + '% of contributors: \n' + '\n'.join(
+                [graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0,len(graphdatax))]
+            )
+        )
     
     doGraph(
         'Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(percent) + '%',

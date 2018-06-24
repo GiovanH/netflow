@@ -85,4 +85,4 @@ def slugify(value):
     Normalizes string, converts to lowercase, removes non-alpha characters,
     and converts spaces to hyphens.
     """
-    return value.replace(" ","_")
+    return value.replace(" ","_").replace(".","").replace("\\","_").replace("/","_").replace("%","perc").replace("*","+")
