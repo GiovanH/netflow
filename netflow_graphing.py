@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 
 global_args = {}
 
+#Save a figure as an image.
 def savefig(type, plt):
     import datetime
     import os
@@ -18,7 +19,13 @@ def savefig(type, plt):
         pass
     plt.savefig('./img/' + type + '_' + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p")) + '.png', bbox_inches="tight")
 
+#Abstract function to handle simple X/Y graphing
 def doGraph(title,xlabel,x,ylabel,y):
+    #Clear any old data on the canvas
+    plt.clf()
+
+    #Plot a regression, if asked.
+    #This function is unfinished.
     if global_args.regress:
         from scipy import stats
         gradient, intercept, r_value, p_value, std_err = stats.linregress(list(range(1,len(graphdatax)+1)),graphdatay)
@@ -28,31 +35,34 @@ def doGraph(title,xlabel,x,ylabel,y):
         y1=gradient*x1+intercept
         plt.plot(x1,y1,'-r')
     
-    # Cumulative counts:
+    #Plot x and y
     plt.plot(x,y)
 
     #Axis labels and formatting
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
     plt.title(title)
-    
     plt.ticklabel_format(style='plain',axis='y',useLocale=True)
-    #Display
-    savefig(util.slugify(title) + "_" + util.slugify(global_args.files), plt)
+    
+    #Save a copy of the figure.
+    savefig(util.slugify(global_args.files) + "_" + util.slugify(title), plt)
+    
+    #Display graph in window, unless running in CLI only mode.
     if not global_args.nowindow:
         print("See window")
         plt.show()
 
+#Graph cumulative traffic of the top %[percent] of traffic contributors. Filtered by flowdir and ip_type.
 def top_contributors_percent(predata, percent, flowdir):
     field = 'bytes_in'
     try:
-        #Filter records by flow direction
+        #Filter out records that do not match the required flow direction.
         predata = [i for i in predata if i['flow_dir'] == flowdir ]
         
         #Group records by ip type
         predata = util.combine_data(predata, lambda a,b: a[global_args.ip_type]==b[global_args.ip_type], global_args.ip_type)
         
-        #Convert to sortable ints, and get total
+        #Convert to sortable ints, and get total data. Required to do percent calculations.
         totalrecords = len(predata)
         total = 0
         for point in predata:
@@ -60,21 +70,20 @@ def top_contributors_percent(predata, percent, flowdir):
             total += point[field]
             
         #Get top 10 records by bytes_in
-        #Sorts the list by bytes_in, gets the #n... #2, #1 entries, then reverses that list.
+        #Sorts the list by field (bytes_in), gets the #n... #2, #1 entries.
         predata = sorted(predata, key=lambda k: k[field])
         
-        #Make final data by percent
+        #Initialize array for the final data points
         data = []
-        
         #Map included/total ratio while adding
         included = 0
         
         #Calculate top % of data, and use that as the data we graph
+        #Until the amount of data we have exceeds %[percent], move a data point into our final list.
         while len(predata) > 0 and included < total*(percent/100):
             newrecord = predata.pop()
             included += newrecord[field]
             data.append(newrecord)
-            #print({'percent':percent/100,'total':total,'inclulded':included,'totalpercent':total*(percent/100)})
         print("Records included: " + str(len(data)) + '/' + str(totalrecords))
 
         #Create seperate X and Y arrays based on sort fields
@@ -87,6 +96,8 @@ def top_contributors_percent(predata, percent, flowdir):
         print(', '.join([i for i in data[0].keys()]))
         return
     
+    #Log which IP addresses account for which rank.
+    #Also, run whois comparison if whois is requested.
     if (global_args.whois):
         ip_2_owner = whois.getOwnerPairing(graphdatax);
         
@@ -102,6 +113,7 @@ def top_contributors_percent(predata, percent, flowdir):
             )
         )
     
+    #Do final graph.
     doGraph(
         'Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(percent) + '%, by ' + global_args.ip_type,
         'Top contributors',
@@ -110,6 +122,7 @@ def top_contributors_percent(predata, percent, flowdir):
         np.cumsum(graphdatay)
     )
 
+#Graph cumulative traffic of the top [topn] of traffic contributors. Filtered by flowdir and ip_type.
 def top_contributors(data, topn, flowdir):
     field = global_args.field
     try:
