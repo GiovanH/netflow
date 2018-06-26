@@ -39,8 +39,9 @@ def doGraph(title,xlabel,x,ylabel,y):
     plt.ticklabel_format(style='plain',axis='y',useLocale=True)
     #Display
     savefig(util.slugify(title) + "_" + util.slugify(global_args.files), plt)
-    print("See window")
-    plt.show()
+    if not global_args.nowindow:
+        print("See window")
+        plt.show()
 
 def top_contributors_percent(predata, percent, flowdir):
     field = 'bytes_in'
@@ -48,8 +49,8 @@ def top_contributors_percent(predata, percent, flowdir):
         #Filter records by flow direction
         predata = [i for i in predata if i['flow_dir'] == flowdir ]
         
-        #Group records by src_ip
-        predata = util.combine_data(predata, lambda a,b: a['src_ip']==b['src_ip'], 'src_ip')
+        #Group records by ip type
+        predata = util.combine_data(predata, lambda a,b: a[global_args.ip_type]==b[global_args.ip_type], global_args.ip_type)
         
         #Convert to sortable ints, and get total
         totalrecords = len(predata)
@@ -78,7 +79,7 @@ def top_contributors_percent(predata, percent, flowdir):
 
         #Create seperate X and Y arrays based on sort fields
         graphdatay = np.array([point[field] for point in data])
-        graphdatax = np.array([point['src_ip'] for point in data])
+        graphdatax = np.array([point[global_args.ip_type] for point in data])
         print(graphdatax,graphdatay)
     except KeyError:
         print("No such field \"" + field + "\"")
@@ -102,7 +103,7 @@ def top_contributors_percent(predata, percent, flowdir):
         )
     
     doGraph(
-        'Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(percent) + '%',
+        'Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(percent) + '%, by ' + global_args.ip_type,
         'Top contributors',
         list(range(1,len(graphdatax)+1)),
         'Total ' + field,
@@ -110,13 +111,13 @@ def top_contributors_percent(predata, percent, flowdir):
     )
 
 def top_contributors(data, topn, flowdir):
-    field = 'bytes_in'
+    field = global_args.field
     try:
         #Filter records by flow direction
         data = [i for i in data if i['flow_dir'] == flowdir ]
         
         #Group records by src_ip
-        data = util.combine_data(data, lambda a,b: a['src_ip']==b['src_ip'], 'src_ip')
+        data = util.combine_data(data, lambda a,b: a[global_args.ip_type]==b[global_args.ip_type], global_args.ip_type)
         
         #Convert to sortable ints
         for point in data:
@@ -128,7 +129,7 @@ def top_contributors(data, topn, flowdir):
 
         #Create seperate X and Y arrays based on sort fields
         graphdatay = np.array([point[field] for point in data])
-        graphdatax = np.array([point['src_ip'] for point in data])
+        graphdatax = np.array([point[global_args.ip_type] for point in data])
         print(graphdatax,graphdatay)
     except KeyError:
         print("No such field \"" + field + "\"")
@@ -139,7 +140,7 @@ def top_contributors(data, topn, flowdir):
     print('Top ' + str(topn) + ' contributors: \n' + '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0,len(graphdatax))]))
     
     doGraph(
-        'Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(topn),
+        'Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(topn) + ' by ' + global_args.ip_type,
         'Top contributors',
         list(range(1,len(graphdatax)+1)),
         'Total ' + field,
@@ -154,7 +155,7 @@ def top_contributors_noncum(data, topn, flowdir):
         data = [i for i in data if i['flow_dir'] == flowdir ]
         
         #Group records by src_ip
-        data = util.combine_data(data, lambda a,b: a['src_ip']==b['src_ip'], 'src_ip')
+        data = util.combine_data(data, lambda a,b: a[global_args.ip_type]==b[global_args.ip_type], global_args.ip_type)
         
         #Convert to sortable ints
         for point in data:
@@ -166,7 +167,7 @@ def top_contributors_noncum(data, topn, flowdir):
 
         #Create seperate X and Y arrays based on sort fields
         graphdatay = np.array([point[field] for point in data])
-        graphdatax = np.array([point['src_ip'] for point in data])
+        graphdatax = np.array([point[global_args.ip_type] for point in data])
         print(graphdatax,graphdatay)
     except KeyError:
         print("No such field \"" + field + "\"")
@@ -177,7 +178,7 @@ def top_contributors_noncum(data, topn, flowdir):
     print('Top ' + str(topn) + ' contributors: \n' + '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0,len(graphdatax))]))
     
     doGraph(
-        'Traffic, ' + ('incoming' if flowdir == '1' else 'outgoing'),
+        'Traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ', by ' + global_args.ip_type,
         'Top N contributor',
         list(range(1,len(graphdatax)+1)),
         'Total ' + field,

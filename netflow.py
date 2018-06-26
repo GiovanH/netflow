@@ -15,11 +15,16 @@ netflow.py
 
 parser.add_argument("files", help="Files to parse (glob)")
 parser.add_argument('--cap', type=int, default=-1, help='Maximum entries to process')
+
 parser.add_argument('--regress','-r', action='store_true')
 parser.add_argument('--whois', action='store_true')
+parser.add_argument('--nowindow', action='store_true')
+
 parser.add_argument('--num', type=int, default=20, help='Top N entries, if applicable')
-parser.add_argument('--field', type=str, default='bytes_in', help='Field of interest, if applicable')
 parser.add_argument('--percent', type=float, default=20, help='Percent, if applicable')
+parser.add_argument('--field', type=str, default='bytes_in', help='Field of interest, if applicable')
+parser.add_argument('--ip_type', type=str, default='src_ip', help='IP type, src or dest')
+
 parser.add_argument('--compress_field', type=str, default=None, help='Compress data by field')
 parser.add_argument('--compress_size', type=int, default=1000000, help='Compress data by size') #Compress to MB
 parser.add_argument("cmds", nargs='*', help="Commands to execute in sequence.")
@@ -29,7 +34,10 @@ ngraph.global_args = args
 
 #Hack: Fix cygwin paths
 args.files = args.files.replace("/","\\")
+if args.compress_field == "ip":
+    args.compress_field = args.ip_type
 
+print(args)
 #Init data store
 data = []
 
