@@ -4,6 +4,9 @@
 import pickle
 import os
 
+def simple_combine_data(data,sortField):
+    return combine_data(data, lambda a,b: a[sortField]==b[sortField], sortField)
+
 def combine_data(data, equals, sortField):
     #Combines records in data based on the equals function.
     #Only sequential entries after sorting by sortfield will be combined.
@@ -43,6 +46,27 @@ def combine_data(data, equals, sortField):
             finaldata.append(combined)
     return finaldata
 
+def top_percent(predata, percent, field, total):
+    totalrecords = len(predata)
+        
+    #Get top 10 records by bytes_in
+    #Sorts the list by field (bytes_in), gets the #n... #2, #1 entries.
+    predata = sorted(predata, key=lambda k: k[field])
+    
+    #Initialize array for the final data points
+    data = []
+    #Map included/total ratio while adding
+    included = 0
+    
+    #Calculate top % of data, and use that as the data we graph
+    #Until the amount of data we have exceeds %[percent], move a data point into our final list.
+    while len(predata) > 0 and included < total*(percent/100):
+        newrecord = predata.pop()
+        included += newrecord[field]
+        data.append(newrecord)
+    print("Records included: " + str(len(data)) + '/' + str(totalrecords))
+    return data
+    
 def pickleLoad(filename):
     """
     TODO: Docstring
@@ -80,9 +104,13 @@ def pickleSave(object, filename):
 def path(file):
     return "obj/" + file.replace(".","_").replace("\\","_") + ".obj"
 
-def slugify(value):
+def sluggify(value):
     """
     Normalizes string, converts to lowercase, removes non-alpha characters,
     and converts spaces to hyphens.
     """
-    return value.replace(" ","_").replace(".","").replace("\\","_").replace("/","_").replace("%","perc").replace("*","+")
+    r = value.replace("..\\","prev")
+    r = r.replace("\"","").replace(" ","_")
+    r = r.replace("\\","_").replace("/","_")
+    r = r.replace("*","+").replace("%","perc")
+    return r

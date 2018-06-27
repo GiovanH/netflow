@@ -1,10 +1,16 @@
 #!/bin/python3
 
 import netflow_util as util
-from ipwhois import IPWhois
+import ipwhois
 
 whoisData = {}
 cachefilename = "whoiscache"
+
+#Suppress ipwhois depreciation warnings. This is an issue with the core library and should be updated soon.
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=UserWarning)
+
 
 def loadWhois():
     global whoisData #Necessary to modifiy whoisData
@@ -19,22 +25,33 @@ def saveWhois():
     util.pickleSave(whoisData, cachefilename)
 
 def populateDatabase(addresses):
+    print(addresses)
     global whoisData #Necessary to modifiy whoisData
     for ip in addresses:
         try:
+            #Validate cached data.
             ipdata = whoisData[ip]
+            assert ipdata.get('owner') is not None
+            assert ipdata.get('owner') is not "UNKNOWN: LOOKUP FAILED???"
         except:
             try:
-                ipdata = IPWhois(ip).lookup_rdap(depth=0)
+                ipdata = ipwhois.IPWhois(ip).lookup_rdap(depth=0)
                 print("WHOIS: Acquired new data for ip " + ip)
-                whoisData[ip] = ipdata
+                whoisData[ip] = {'owner': ipdata['asn_description']}
             except ipwhois.exceptions.IPDefinedError:
-                print("CRITICAL FAILURE: Cannot whois lookup an internal IP address!")
+                whoisData[ip] = {'owner': "INTERNAL"}
+            except ipwhois.exceptions.HTTPLookupError:
+                whoisData[ip] = {'owner': "UNKNOWN: LOOKUP FAILED???"}
     saveWhois()
     
 def getOwnerPairing(addresses):
     populateDatabase(addresses)
-    return {ip: whoisData[ip]['asn_description'] for ip in addresses}
+    return {ip: whoisData[ip]['owner'] for ip in addresses}
+
+def appendOwnerData(data, iptype):
+    populateDatabase([entry[iptype] for entry in data])
+    for entry in data:
+        entry['whois_owner'] = whoisData[entry[iptype]]['owner']
     
 def selfTest():
     addresses = ['4.4.4.4','2.2.2.2']

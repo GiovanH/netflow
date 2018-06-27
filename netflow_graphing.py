@@ -10,14 +10,15 @@ import matplotlib.pyplot as plt
 global_args = {}
 
 #Save a figure as an image.
-def savefig(type, plt):
+def savefig(glob, type, plt):
     import datetime
     import os
+    destpath = './img/' + util.sluggify(glob) + "/" + util.sluggify(type) + '/'
     try:
-        os.makedirs('./img/')
+        os.makedirs(destpath)
     except FileExistsError:
         pass
-    plt.savefig('./img/' + type + '_' + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p")) + '.png', bbox_inches="tight")
+    plt.savefig(destpath + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p")) + '.png', bbox_inches="tight")
 
 #Abstract function to handle simple X/Y graphing
 def doGraph(title,xlabel,x,ylabel,y):
@@ -45,7 +46,7 @@ def doGraph(title,xlabel,x,ylabel,y):
     plt.ticklabel_format(style='plain',axis='y',useLocale=True)
     
     #Save a copy of the figure.
-    savefig(util.slugify(global_args.files) + "_" + util.slugify(title), plt)
+    savefig(global_args.files, title, plt)
     
     #Display graph in window, unless running in CLI only mode.
     if not global_args.nowindow:
@@ -60,7 +61,7 @@ def top_contributors_percent(predata, percent, flowdir):
         predata = [i for i in predata if i['flow_dir'] == flowdir ]
         
         #Group records by ip type
-        predata = util.combine_data(predata, lambda a,b: a[global_args.ip_type]==b[global_args.ip_type], global_args.ip_type)
+        predata = util.simple_combine_data(predata, global_args.ip_type)
         
         #Convert to sortable ints, and get total data. Required to do percent calculations.
         totalrecords = len(predata)
@@ -98,7 +99,7 @@ def top_contributors_percent(predata, percent, flowdir):
     
     #Log which IP addresses account for which rank.
     #Also, run whois comparison if whois is requested.
-    if (global_args.whois):
+    if (not global_args.nowhois):
         ip_2_owner = whois.getOwnerPairing(graphdatax);
         
         print(
@@ -122,6 +123,62 @@ def top_contributors_percent(predata, percent, flowdir):
         np.cumsum(graphdatay)
     )
 
+#Graph cumulative traffic of the top %[percent] of traffic contributors. Filtered by flowdir and ip_type.
+def top_owners_percent(data, percent, flowdir):
+    field = 'bytes_in'
+    try:
+        #Filter out records that do not match the required flow direction.
+        data = [i for i in data if i['flow_dir'] == flowdir ]
+        
+        #Group records by ip type
+        data = util.simple_combine_data(data, global_args.ip_type)
+        
+        #Calculate total for percent calculations
+        total = 0
+        for point in data:
+            point[field] = int(point[field])
+            total += point[field]
+            
+        #Take top percent
+        data = util.top_percent(data, percent, field, total)    
+            
+        #Append whois data to this reduced data set
+        whois.appendOwnerData(data, global_args.ip_type)
+        
+        #Group by whois data
+        data = util.simple_combine_data(data, "whois_owner")
+        
+        #Take top percent again, remembering total from earlier
+        data = util.top_percent(data, percent, field, total)
+
+        #Create seperate X and Y arrays based on sort fields
+        graphdatay = np.array([point[field] for point in data])
+        graphdatax = np.array([point["whois_owner"] for point in data])
+        print(graphdatax,graphdatay)
+    except KeyError:
+        print("No such field \"" + field + "\"")
+        print("Valid fields:")
+        print(', '.join([i for i in data[0].keys()]))
+        return
+    
+    #Log which IP addresses account for which rank.
+    #Also, run whois comparison if whois is requested.
+    
+    print(
+        'Top ' + str(percent) + '% of contributors: \n' + '\n'.join(
+            [graphdatax[i] + "\t" + str(graphdatay[i]) + "\t" for i in range(0,len(graphdatax))]
+        )
+    )
+    
+    #Do final graph.
+    doGraph(
+        'Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(percent) + '% of owners, by ' + global_args.ip_type,
+        'Top contributors',
+        list(range(1,len(graphdatax)+1)),
+        'Total ' + field,
+        np.cumsum(graphdatay)
+    )
+
 #Graph cumulative traffic of the top [topn] of traffic contributors. Filtered by flowdir and ip_type.
 def top_contributors(data, topn, flowdir):
     field = global_args.field
@@ -130,7 +187,7 @@ def top_contributors(data, topn, flowdir):
         data = [i for i in data if i['flow_dir'] == flowdir ]
         
         #Group records by src_ip
-        data = util.combine_data(data, lambda a,b: a[global_args.ip_type]==b[global_args.ip_type], global_args.ip_type)
+        data = util.simple_combine_data(data, global_args.ip_type)
         
         #Convert to sortable ints
         for point in data:
@@ -168,7 +225,7 @@ def top_contributors_noncum(data, topn, flowdir):
         data = [i for i in data if i['flow_dir'] == flowdir ]
         
         #Group records by src_ip
-        data = util.combine_data(data, lambda a,b: a[global_args.ip_type]==b[global_args.ip_type], global_args.ip_type)
+        data = util.simple_combine_data(data, global_args.ip_type)
         
         #Convert to sortable ints
         for point in data:

@@ -17,7 +17,7 @@ parser.add_argument("files", help="Files to parse (glob)")
 parser.add_argument('--cap', type=int, default=-1, help='Maximum entries to process')
 
 parser.add_argument('--regress','-r', action='store_true')
-parser.add_argument('--whois', action='store_true')
+parser.add_argument('--nowhois', action='store_true')
 parser.add_argument('--nowindow', action='store_true')
 
 parser.add_argument('--num', type=int, default=20, help='Top N entries, if applicable')
@@ -41,7 +41,8 @@ print(args)
 #Init data store
 data = []
 
-#Get data from cache or csv
+#Read data in from CSV files.
+#Data is based on a file glob to CSV files that are expected to be netflow exports.
 try:
     data = ncsv.opencsv(args.files, args)
 except:
@@ -71,6 +72,8 @@ options = {
     "top_contributors_in" : (lambda: ngraph.top_contributors(copy.deepcopy(data), args.num,'1')),
     "top_percent_in" : (lambda: ngraph.top_contributors_percent(copy.deepcopy(data), args.percent,'1')),
     "top_percent_out" : (lambda: ngraph.top_contributors_percent(copy.deepcopy(data), args.percent,'0')),
+    "top_percent_in_owners" : (lambda: ngraph.top_owners_percent(copy.deepcopy(data), args.percent,'1')),
+    "top_percent_out_owners" : (lambda: ngraph.top_owners_percent(copy.deepcopy(data), args.percent,'0')),
     "c" : (lambda: print("C!"))
 }
 
