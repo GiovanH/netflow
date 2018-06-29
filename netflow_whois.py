@@ -31,17 +31,23 @@ def populateDatabase(addresses):
         try:
             #Validate cached data.
             ipdata = whoisData[ip]
+            assert ipdata.get('good') is True
+            assert ipdata.get('version') == 1.0
             assert ipdata.get('owner') is not None
-            assert ipdata.get('owner') is not "UNKNOWN: LOOKUP FAILED???"
         except:
+            whoisData[ip] = {}
+            whoisData[ip]['version'] = 1.0
+            whoisData[ip]['good'] = True
             try:
                 ipdata = ipwhois.IPWhois(ip).lookup_rdap(depth=0)
                 print("WHOIS: Acquired new data for ip " + ip)
-                whoisData[ip] = {'owner': ipdata['asn_description']}
+                whoisData[ip]['owner'] = ipdata['asn_description']
             except ipwhois.exceptions.IPDefinedError:
-                whoisData[ip] = {'owner': "INTERNAL"}
+                whoisData[ip]['owner'] = "INTERNAL"
             except ipwhois.exceptions.HTTPLookupError:
-                whoisData[ip] = {'owner': "UNKNOWN: LOOKUP FAILED???"}
+                whoisData[ip]['owner'] = "UNKNOWN"
+                whoisData[ip]['good'] = False
+                print("Error looking up IP address " + ip)
     saveWhois()
     
 def getOwnerPairing(addresses):
