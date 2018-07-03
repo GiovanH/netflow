@@ -30,7 +30,7 @@ def savelog(glob, type, text):
     except FileExistsError:
         pass
     with open(destpath + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p")) + '.log',"w") as file:
-        file.write(type)
+        file.write(type + "\n")
         file.write(text)
     
 #Abstract function to handle simple X/Y graphing
