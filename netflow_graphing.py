@@ -13,13 +13,26 @@ global_args = {}
 def savefig(glob, type, plt):
     import datetime
     import os
-    destpath = './img/' + util.sluggify(glob) + "/" + util.sluggify(type) + '/'
+    destpath = './out/' + util.sluggify(glob) + "/" + util.sluggify(type) + '/'
     try:
         os.makedirs(destpath)
     except FileExistsError:
         pass
     plt.savefig(destpath + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p")) + '.png', bbox_inches="tight")
 
+
+def savelog(glob, type, text):
+    import datetime
+    import os
+    destpath = './out/' + util.sluggify(glob) + "/" + util.sluggify(type) + '/'
+    try:
+        os.makedirs(destpath)
+    except FileExistsError:
+        pass
+    with open(destpath + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p")) + '.log',"w") as file:
+        file.write(type)
+        file.write(text)
+    
 #Abstract function to handle simple X/Y graphing
 def doGraph(title,xlabel,x,ylabel,y):
     #Clear any old data on the canvas
@@ -76,7 +89,7 @@ def top_contributors_percent(predata, percent, flowdir):
         
         #Initialize array for the final data points
         data = []
-        #Map included/total ratio while adding
+        #Map included/total ratio while adding  
         included = 0
         
         #Calculate top % of data, and use that as the data we graph
@@ -90,33 +103,34 @@ def top_contributors_percent(predata, percent, flowdir):
         #Create seperate X and Y arrays based on sort fields
         graphdatay = np.array([point[field] for point in data])
         graphdatax = np.array([point[global_args.ip_type] for point in data])
-        print(graphdatax,graphdatay)
+        #print(graphdatax,graphdatay)
     except KeyError:
         print("No such field \"" + field + "\"")
         print("Valid fields:")
         print(', '.join([i for i in data[0].keys()]))
         return
     
+    graphtitle = 'Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(percent) + '%, by ' + global_args.ip_type
+    
+    logtxt = ""
     #Log which IP addresses account for which rank.
     #Also, run whois comparison if whois is requested.
     if (not global_args.nowhois):
         ip_2_owner = whois.getOwnerPairing(graphdatax);
         
-        print(
-            'Top ' + str(percent) + '% of contributors: \n' + '\n'.join(
+        logtxt = 'Top ' + str(percent) + '% of contributors: \n' + '\n'.join(
                 [graphdatax[i] + "\t" + str(graphdatay[i]) + "\t" + str(ip_2_owner[graphdatax[i]]) for i in range(0,len(graphdatax))]
             )
-        )
+        
     else:
-        print(
-            'Top ' + str(percent) + '% of contributors: \n' + '\n'.join(
+        logtxt = 'Top ' + str(percent) + '% of contributors: \n' + '\n'.join(
                 [graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0,len(graphdatax))]
             )
-        )
     
+    savelog(global_args.files, graphtitle, logtxt)
     #Do final graph.
     doGraph(
-        'Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(percent) + '%, by ' + global_args.ip_type,
+        graphtitle,
         'Top contributors',
         list(range(1,len(graphdatax)+1)),
         'Total ' + field,
@@ -154,7 +168,7 @@ def top_owners_percent(data, percent, flowdir):
         #Create seperate X and Y arrays based on sort fields
         graphdatay = np.array([point[field] for point in data])
         graphdatax = np.array([point["whois_owner"] for point in data])
-        print(graphdatax,graphdatay)
+        #print(graphdatax,graphdatay)
     except KeyError:
         print("No such field \"" + field + "\"")
         print("Valid fields:")
@@ -164,15 +178,16 @@ def top_owners_percent(data, percent, flowdir):
     #Log which IP addresses account for which rank.
     #Also, run whois comparison if whois is requested.
     
-    print(
-        'Top ' + str(percent) + '% of contributors: \n' + '\n'.join(
+    graphtitle ='Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(percent) + '% of owners, by ' + global_args.ip_type
+    logtxt = 'Top ' + str(percent) + '% of contributors: \n' + '\n'.join(
             [graphdatax[i] + "\t" + str(graphdatay[i]) + "\t" for i in range(0,len(graphdatax))]
         )
-    )
+    
+    savelog(global_args.files, graphtitle, logtxt)
     
     #Do final graph.
     doGraph(
-        'Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(percent) + '% of owners, by ' + global_args.ip_type,
+        graphtitle,
         'Top contributors',
         list(range(1,len(graphdatax)+1)),
         'Total ' + field,
@@ -200,17 +215,20 @@ def top_contributors(data, topn, flowdir):
         #Create seperate X and Y arrays based on sort fields
         graphdatay = np.array([point[field] for point in data])
         graphdatax = np.array([point[global_args.ip_type] for point in data])
-        print(graphdatax,graphdatay)
+        #print(graphdatax,graphdatay)
     except KeyError:
         print("No such field \"" + field + "\"")
         print("Valid fields:")
         print(', '.join([i for i in data[0].keys()]))
         return
     
-    print('Top ' + str(topn) + ' contributors: \n' + '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0,len(graphdatax))]))
+    graphtitle = 'Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(topn) + ' by ' + global_args.ip_type
     
+    logtxt = 'Top ' + str(topn) + ' contributors: \n' + '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0,len(graphdatax))])
+    
+    savelog(global_args.files, graphtitle, logtxt)
     doGraph(
-        'Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(topn) + ' by ' + global_args.ip_type,
+        graphtitle,
         'Top contributors',
         list(range(1,len(graphdatax)+1)),
         'Total ' + field,
@@ -238,17 +256,20 @@ def top_contributors_noncum(data, topn, flowdir):
         #Create seperate X and Y arrays based on sort fields
         graphdatay = np.array([point[field] for point in data])
         graphdatax = np.array([point[global_args.ip_type] for point in data])
-        print(graphdatax,graphdatay)
+        #print(graphdatax,graphdatay)
     except KeyError:
         print("No such field \"" + field + "\"")
         print("Valid fields:")
         print(', '.join([i for i in data[0].keys()]))
         return
     
-    print('Top ' + str(topn) + ' contributors: \n' + '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0,len(graphdatax))]))
+    graphtitle = 'Traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ', by ' + global_args.ip_type
     
+    logtxt = 'Top ' + str(topn) + ' contributors: \n' + '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0,len(graphdatax))])
+    
+    savelog(global_args.files, graphtitle, logtxt)
     doGraph(
-        'Traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ', by ' + global_args.ip_type,
+        graphtitle,
         'Top N contributor',
         list(range(1,len(graphdatax)+1)),
         'Total ' + field,

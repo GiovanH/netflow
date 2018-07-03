@@ -3,3 +3,4 @@ obj/*
 *.lnk
 img/*
 logs/*
+out/*
