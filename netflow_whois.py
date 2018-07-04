@@ -25,7 +25,6 @@ def saveWhois():
     util.pickleSave(whoisData, cachefilename)
 
 def populateDatabase(addresses):
-    print(addresses)
     global whoisData #Necessary to modifiy whoisData
     for ip in addresses:
         try:

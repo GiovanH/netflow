@@ -29,6 +29,8 @@ parser.add_argument('--compress_field', type=str, default=None, help='Compress d
 parser.add_argument('--compress_size', type=int, default=1000000, help='Compress data by size') #Compress to MB
 parser.add_argument("cmds", nargs='*', help="Commands to execute in sequence.")
 
+#TODO: ARgument, "verbose"
+
 args = parser.parse_args()
 ngraph.global_args = args
 

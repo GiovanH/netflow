@@ -169,7 +169,7 @@ def top_owners_percent(data, percent, flowdir):
         #Create seperate X and Y arrays based on sort fields
         graphdatay = np.array([point[field] for point in data])
         graphdatax = np.array([point["whois_owner"] for point in data])
-        #print(graphdatax,graphdatay)
+        #print(graphdatax,graphdatay) #TODO: IF verbose
     except KeyError:
         print("No such field \"" + field + "\"")
         print("Valid fields:")
