@@ -2,7 +2,8 @@
 
 import netflow_util as util
 import ipwhois
-
+import pprint
+import traceback
 whoisData = {}
 cachefilename = "whoiscache"
 
@@ -24,12 +25,13 @@ def loadWhois():
 def saveWhois():
     util.pickleSave(whoisData, cachefilename)
 
-def populateDatabase(addresses):
+def populateDatabase(addresses, verbose=False, force=False):
     global whoisData #Necessary to modifiy whoisData
     for ip in addresses:
         try:
             #Validate cached data.
             ipdata = whoisData[ip]
+            assert force is False
             assert ipdata.get('good') is True
             assert ipdata.get('version') == 1.0
             assert ipdata.get('owner') is not None
@@ -40,10 +42,14 @@ def populateDatabase(addresses):
             try:
                 ipdata = ipwhois.IPWhois(ip).lookup_rdap(depth=0)
                 print("WHOIS: Acquired new data for ip " + ip)
+                if verbose:
+                    pprint.pprint(ipdata)
                 whoisData[ip]['owner'] = ipdata['asn_description']
             except ipwhois.exceptions.IPDefinedError:
                 whoisData[ip]['owner'] = "INTERNAL"
+                print(traceback.format_exc())
             except ipwhois.exceptions.HTTPLookupError:
+                print(traceback.format_exc())
                 whoisData[ip]['owner'] = "UNKNOWN"
                 whoisData[ip]['good'] = False
                 print("Error looking up IP address " + ip)
@@ -58,8 +64,8 @@ def appendOwnerData(data, iptype):
     for entry in data:
         entry['whois_owner'] = whoisData[entry[iptype]]['owner']
     
-def selfTest():
-    addresses = ['4.4.4.4','2.2.2.2']
+def getDetailedInformation(addresses, force=True, verbose=True):
+    populateDatabase(addresses, force=force, verbose=verbose)
     pairing = getOwnerPairing(addresses)
     print(
         '\n'.join(
@@ -70,5 +76,5 @@ def selfTest():
 loadWhois()
 """
 import netflow_whois as whois
-whois.getOwnerPairing(['4.4.4.4'])
+whois.selfTest(['4.4.4.4'],force=True,verbose=True)
 """

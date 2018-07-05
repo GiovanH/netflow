@@ -21,7 +21,7 @@ def savefig(glob, type, plt):
     plt.savefig(destpath + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p")) + '.png', bbox_inches="tight")
 
 
-def savelog(glob, type, text):
+def savelog(glob, type, text, titleappend=""):
     import datetime
     import os
     destpath = './out/' + util.sluggify(glob) + "/" + util.sluggify(type) + '/'
@@ -29,12 +29,21 @@ def savelog(glob, type, text):
         os.makedirs(destpath)
     except FileExistsError:
         pass
-    with open(destpath + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p")) + '.log',"w") as file:
+    with open(destpath + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p") + titleappend) + '.log',"w") as file:
         file.write(type + "\n")
         file.write(text)
     
 #Abstract function to handle simple X/Y graphing
 def doGraph(title,xlabel,x,ylabel,y):
+
+    #Verbose data save
+    if global_args.verbose:
+        savelog(global_args.files, title, str(
+                [[x[i], y[i]] for i in range(0,len(x))]
+            ), titleappend="_verbose_points"
+        )
+    
+
     #Clear any old data on the canvas
     plt.clf()
 
@@ -57,6 +66,10 @@ def doGraph(title,xlabel,x,ylabel,y):
     plt.xlabel(xlabel)
     plt.title(title)
     plt.ticklabel_format(style='plain',axis='y',useLocale=True)
+    
+    #Formatting settings
+    if global_args.scaletozero:
+        plt.ylim(ymin=0)
     
     #Save a copy of the figure.
     savefig(global_args.files, title, plt)
@@ -140,6 +153,7 @@ def top_contributors_percent(predata, percent, flowdir):
 #Graph cumulative traffic of the top %[percent] of traffic contributors. Filtered by flowdir and ip_type.
 def top_owners_percent(data, percent, flowdir):
     field = 'bytes_in'
+    graphtitle ='Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(percent) + '% of owners, by ' + global_args.ip_type
     try:
         #Filter out records that do not match the required flow direction.
         data = [i for i in data if i['flow_dir'] == flowdir ]
@@ -159,6 +173,13 @@ def top_owners_percent(data, percent, flowdir):
         #Append whois data to this reduced data set
         whois.appendOwnerData(data, global_args.ip_type)
         
+        #Verbose data save
+        if global_args.verbose:
+            savelog(global_args.files, graphtitle, str(
+                    [[point[field], point["whois_owner"], point[global_args.ip_type]] for point in data]
+                ), titleappend="_verbose_ip_data"
+            )
+            
         #Group by whois data
         data = util.simple_combine_data(data, "whois_owner")
         
@@ -179,13 +200,12 @@ def top_owners_percent(data, percent, flowdir):
     #Log which IP addresses account for which rank.
     #Also, run whois comparison if whois is requested.
     
-    graphtitle ='Cumulative traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(percent) + '% of owners, by ' + global_args.ip_type
     logtxt = 'Top ' + str(percent) + '% of contributors: \n' + '\n'.join(
             [graphdatax[i] + "\t" + str(graphdatay[i]) + "\t" for i in range(0,len(graphdatax))]
         )
     
     savelog(global_args.files, graphtitle, logtxt)
-    
+
     #Do final graph.
     doGraph(
         graphtitle,

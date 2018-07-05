@@ -14,11 +14,13 @@ netflow.py
 """)
 
 parser.add_argument("files", help="Files to parse (glob)")
-parser.add_argument('--cap', type=int, default=-1, help='Maximum entries to process')
+parser.add_argument('--verbose', action='store_true', help='Verbose output for graphing data')
 
+parser.add_argument('--cap', type=int, default=-1, help='Maximum entries to process')
 parser.add_argument('--regress','-r', action='store_true')
 parser.add_argument('--nowhois', action='store_true')
 parser.add_argument('--nowindow', action='store_true')
+parser.add_argument('--scaletozero', action='store_true')
 
 parser.add_argument('--num', type=int, default=20, help='Top N entries, if applicable')
 parser.add_argument('--percent', type=float, default=20, help='Percent, if applicable')
