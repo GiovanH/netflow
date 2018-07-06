@@ -27,6 +27,8 @@ def saveWhois():
 
 def populateDatabase(addresses, verbose=False, force=False):
     global whoisData #Necessary to modifiy whoisData
+    if whoisData is {}:
+        loadWhois()
     for ip in addresses:
         try:
             #Validate cached data.
@@ -73,7 +75,6 @@ def getDetailedInformation(addresses, force=True, verbose=True):
         )
     )
 
-loadWhois()
 """
 import netflow_whois as whois
 whois.selfTest(['4.4.4.4'],force=True,verbose=True)
