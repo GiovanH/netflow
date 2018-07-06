@@ -169,7 +169,10 @@ def top_owners_percent(data, percent, flowdir):
             
         #Take top percent
         data = util.top_percent(data, percent, field, total)    
-            
+        
+        #Sort reduced data set
+        data = sorted(data, key=lambda k: k[field])
+        
         #Append whois data to this reduced data set
         whois.appendOwnerData(data, global_args.ip_type)
         
