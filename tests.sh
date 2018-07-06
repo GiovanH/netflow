@@ -1,6 +1,6 @@
 #!/bin/bash
 
-files="../20180110/0*.csv"
+files="../20180110/00*.csv"
 logfile="./logs/tests.log"
 # "C:/ProgramData/Anaconda3/python.exe" netflow.py \
 	# --nowindow \
@@ -14,9 +14,9 @@ rm -v ./logs/tests.log 2>/dev/null
 echo Fileglob: "${files}"			| tee -a ${logfile}
 echo Files: ${files}			| tee -a ${logfile}
 	
-for ip_type in src_ip dest_ip
+for ip_type in src_ip
 do
-	for percent in 80 40
+	for percent in 80
 	do
 		echo Percent: ${percent}			| tee -a ${logfile}
 		echo IP type: ${ip_type}			| tee -a ${logfile}
@@ -28,7 +28,7 @@ do
 			--scaletozero \
 			--compress_field ip \
 			"${files}" \
-			top_percent_in_owners top_percent_out_owners \
+			top_percent_in_owners top_percent_in top_percent_out top_percent_out_owners \
 			| tee -a ${logfile}
 
 		# "C:/ProgramData/Anaconda3/python.exe" netflow.py \

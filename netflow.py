@@ -63,7 +63,6 @@ args.files = args.files.replace("/","\\")
 if args.compress_field == "ip":
     args.compress_field = args.ip_type
 
-print(args)
 #Init data store
 data = []
 
@@ -89,7 +88,9 @@ def oniondump(data):
 
 try:
     for c in args.cmds:
-        print(c)
+        print('####################################')
+        print('###\t' + c)
+        print('####################################')
         options[c]()
 except KeyError:
     print("No such command " + c)

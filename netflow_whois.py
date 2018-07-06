@@ -27,7 +27,7 @@ def saveWhois():
 
 def populateDatabase(addresses, verbose=False, force=False):
     global whoisData #Necessary to modifiy whoisData
-    if whoisData is {}:
+    if whoisData == {}:
         loadWhois()
     for ip in addresses:
         try:

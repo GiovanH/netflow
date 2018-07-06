@@ -28,6 +28,7 @@ def opencsv(globstr, args):
                     print('#', end='')
                     sys.stdout.flush()
         print(']')
+        sys.stdout.flush()
         #util.pickleSave(sheet, filename)
         if args.compress_field is not None:
             sheet = util.combine_data(sheet, lambda a,b: a[args.compress_field]==b[args.compress_field], args.compress_field)

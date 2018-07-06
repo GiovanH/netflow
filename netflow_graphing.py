@@ -170,11 +170,9 @@ def top_owners_percent(data, percent, flowdir):
         #Take top percent
         data = util.top_percent(data, percent, field, total)    
         
-        #Sort reduced data set
-        data = sorted(data, key=lambda k: k[field])
-        
         #Append whois data to this reduced data set
         whois.appendOwnerData(data, global_args.ip_type)
+        
         
         #Verbose data save
         if global_args.verbose:
@@ -186,9 +184,8 @@ def top_owners_percent(data, percent, flowdir):
         #Group by whois data
         data = util.simple_combine_data(data, "whois_owner")
         
-        #Take top percent again, remembering total from earlier
-        #If my math is right, this is completely reundant.
-        #data = util.top_percent(data, percent, field, total)
+        #Sort reduced data set
+        data = sorted(data, key=lambda k: k[field])
 
         #Create seperate X and Y arrays based on sort fields
         graphdatay = np.array([point[field] for point in data])

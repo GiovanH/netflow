@@ -10,6 +10,9 @@ def simple_combine_data(data,sortField):
 def combine_data(data, equals, sortField):
     #Combines records in data based on the equals function.
     #Only sequential entries after sorting by sortfield will be combined.
+    if len(data) is 0:
+        print("Warning! Data is empty!")
+        return data
     data_sorted = sorted(data, key=lambda k: k[sortField])
     p = data_sorted.pop()
     groups = []
