@@ -185,7 +185,7 @@ def top_owners_percent(data, percent, flowdir):
         data = util.simple_combine_data(data, "whois_owner")
         
         #Sort reduced data set
-        data = sorted(data, key=lambda k: k[field])
+        data = sorted(data, key=lambda k: k[field])[::-1]
 
         #Create seperate X and Y arrays based on sort fields
         graphdatay = np.array([point[field] for point in data])
