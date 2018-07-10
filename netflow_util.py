@@ -43,6 +43,8 @@ def combine_data(data, equals, sortField):
             value = 0
             for entry in l:
                 try:
+                    if key == 'linenum':
+                        raise TypeError
                     value += entry[key]
                 except TypeError:
                     value = entry[key]

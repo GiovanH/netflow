@@ -10,6 +10,8 @@ import netflow_graphing as ngraph
 import netflow_util as util
 import copy
 
+from pprint import pformat
+
 options = {
     "dump": (
         lambda: dump(
@@ -19,24 +21,22 @@ options = {
     "dumpargs": (
         lambda: print(",".join([l + "=" + util.sluggify(str(vars(args)[l])) for l in vars(args)]))
     ),
-    "oniondump": (lambda: oniondump(copy.deepcopy(data))),
-    "c": (lambda: print("C!"))
+    "oniondump": (lambda: oniondump(copy.deepcopy(data)))
 }
+
+
+def make_closure(function, arg2, flowdir, iptype):
+    def call():
+        function(copy.deepcopy(data), vars(args)[arg2], flowdir, iptype)
+    return call
+
 
 for f in [{'value': '1', 'name': 'in'}, {'value': '0', 'name': 'out'}]:
     for ip in ['src', 'dest']:
-        options["_".join(["hist", f['name'], ip])] = (
-            lambda: ngraph.graph_hist(copy.deepcopy(data), args.num, f['value'], ip + '_ip')
-        )
-        options["_".join(["top", f['name'], ip])] = (
-            lambda: ngraph.graph_top(copy.deepcopy(data), args.num, f['value'], ip + '_ip')
-        )
-        options["_".join(["top_contributors", f['name'], ip])] = (
-            lambda: ngraph.graph_ippercent(copy.deepcopy(data), args.percent, f['value'], ip + '_ip')
-        )
-        options["_".join(["top_owners", f['name'], ip])] = (
-            lambda: ngraph.graph_icannpercent(copy.deepcopy(data), args.percent, f['value'], ip + '_ip')
-        )
+        options["_".join(["hist", f['name'], ip])] = make_closure(ngraph.graph_hist, 'num', f['value'], ip + '_ip')
+        options["_".join(["top", f['name'], ip])] = make_closure(ngraph.graph_top, 'num', f['value'], ip + '_ip')
+        options["_".join(["ippercent", f['name'], ip])] = make_closure(ngraph.graph_ippercent, 'percent', f['value'], ip + '_ip')
+        options["_".join(["icannpercent", f['name'], ip])] = make_closure(ngraph.graph_icannpercent, 'percent', f['value'], ip + '_ip')
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
                                  epilog="Valid command values for cmd: \n" + "\n    ".join(key for key in options.keys()))
@@ -68,10 +68,7 @@ parser.add_argument('--compress_size', type=int, default=1000000,
                     help='Compress byte values by size. Defaults to 1000000 (Megabytes)')  # Compress to MB
 parser.add_argument("cmds", nargs='*', help="Commands to execute in sequence.")
 
-# TODO: ARgument, "verbose"
-
 args = parser.parse_args()
-
 
 ngraph.global_args = args
 
@@ -83,15 +80,15 @@ data = []
 
 # Read data in from CSV files.
 # Data is based on a file glob to CSV files that are expected to be netflow exports.
-try:
-    data = ncsv.opencsv(args.files, args)
-except:
-    print("Error reading files")
-    traceback.print_exc(file=sys.stdout)
+# try:
+data = ncsv.opencsv(args.files, args)
+# except:
+#     print("Error reading files")
+#     traceback.print_exc(file=sys.stdout)
 
 
 def dump(data):
-    print(data)
+    print(pformat(data))
 
 
 def oniondump(data):
@@ -102,6 +99,7 @@ def oniondump(data):
 
 try:
     for c in args.cmds:
+        sys.stdout.flush()
         print('####################################')
         print('###    ' + c)
         print('####################################')

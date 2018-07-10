@@ -3,6 +3,7 @@
 
 import netflow_util as util
 import netflow_whois as whois
+from pprint import pformat
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -54,7 +55,7 @@ def doGraph(title, xlabel, x, ylabel, y):
 
     # Verbose data save
     if global_args.verbose:
-        savelog(global_args.files, title, str(
+        savelog(global_args.files, title, pformat(
                 [[x[i], y[i]] for i in range(0, len(x))]
                 ), titleappend="_verbose_points"
                 )
@@ -161,7 +162,7 @@ def graph_ippercent(predata, percent, flowdir, ip_type):
         )
 
     else:
-        logtxt = 'Top ' + str(percent) + '% of contributors: \n' + '\n'.join(
+        logtxt = 'Top ' + str(percent) + '% of contributors: \n' + pformat(
             [graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0, len(graphdatax))]
         )
 
@@ -205,14 +206,11 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
 
         # Verbose data save
         if global_args.verbose:
-            savelog(global_args.files, graphtitle, str(
-                    [[point[field], point["whois_owner"], point["src_ip"], point["src_port"],
-                        point["dest_ip"], point["dest_port"]] for point in data]
-                    ), titleappend="_verbose_ip_data"
+            savelog(global_args.files, graphtitle, pformat(data), titleappend="_verbose_ip_data"
                     )
 
         # Group by whois data
-        data = util.simple_combine_data(data, "whois_owner")
+        data = util.simple_combine_data(data, "whois_owner_" + ip_type)
 
         # Sort reduced data set
         data = sorted(data, key=lambda k: k[field])[::-1]
@@ -223,7 +221,7 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
 
         # Create seperate X and Y arrays based on sort fields
         graphdatay = np.array([point[field] for point in data])
-        graphdatax = np.array([point["whois_owner"] for point in data])
+        graphdatax = np.array([point["whois_owner_" + ip_type] for point in data])
         # print(graphdatax,graphdatay) #TODO: IF verbose
     except KeyError:
         print("No such field \"" + field + "\"")

@@ -13,10 +13,18 @@ Run whois on ip addresses for more insightful logs. Look at top-level ip block i
 
 Not done:
 
-Find the diameter of the network using traceroute
+Verify "outgoing by source" and "outgoing by destination"
+Log ports as well as IP addresses in verbose output
 
-Check patterns against Zipf's law
+Programatically generate commands
 
-Research methods of anonymizing data
+Graph by time of day
+
+Shorter folder names for output
+Stop graphing top_contributors and top_percent for now
 
 Graph a stack chart of IP addresses grouped by whois data
+
+Find the diameter of the network using traceroute
+Research methods of anonymizing data
+Check patterns against Zipf's law

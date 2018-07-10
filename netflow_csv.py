@@ -18,10 +18,16 @@ def opencsv(globstr, args):
         with open(filename) as csvfile:
             reader = csv.DictReader(csvfile)
             sheet = []
-            i = 0
+            i = 1
             for row in reader:
                 row['filename'] = filename
-                sheet.append(dict(row))
+                row['linenum'] = i
+                # sheet.append(dict(row))
+                # Let's only read the fields we're interested in, to save time.
+                sheet.append({field: row[field] for field in ['bytes_in', 'dest_ip', 'flow_dir', 'src_ip', 'linenum']})
+                # if row['src_ip'] == "10.189.40.74" and row['dest_ip'] == "10.100.12.41":
+                #     print(i)
+                #     print(row)
                 i += 1
                 args.cap -= 1
                 if (args.cap == 0):
@@ -34,8 +40,9 @@ def opencsv(globstr, args):
 
         # Conservatively compress data
         print("Compressing file")
+        sys.stdout.flush()
         sheet = util.combine_data(sheet, lambda a, b: (
-            a['src_ip'] == b['src_ip'] and a['dest_ip'] == b['dest_ip'] and a['flow_dir'] == b['flow_dir']
+            a['flow_dir'] == b['flow_dir'] and a['src_ip'] == b['src_ip'] and a['dest_ip'] == b['dest_ip']
         ), 'src_ip')
         data += sheet
     # print(data)
