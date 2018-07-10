@@ -98,7 +98,7 @@ def doGraph(title, xlabel, x, ylabel, y):
 # Graph cumulative traffic of the top %[percent] of traffic contributors. Filtered by flowdir and ip_type.
 
 
-def top_contributors_percent(predata, percent, flowdir, ip_type):
+def graph_ippercent(predata, percent, flowdir, ip_type):
     field = 'bytes_in'
     try:
         # Filter out records that do not match the required flow direction.
@@ -179,7 +179,7 @@ def top_contributors_percent(predata, percent, flowdir, ip_type):
 # Graph cumulative traffic of the top %[percent] of traffic contributors. Filtered by flowdir and ip_type.
 
 
-def top_owners_percent(data, percent, flowdir, ip_type):
+def graph_icannpercent(data, percent, flowdir, ip_type):
     field = 'bytes_in'
     graphtitle = 'Cumulative traffic, ' + \
         ('incoming' if flowdir == '1' else 'outgoing') + \
@@ -253,7 +253,7 @@ def top_owners_percent(data, percent, flowdir, ip_type):
 # Graph cumulative traffic of the top [topn] of traffic contributors. Filtered by flowdir and ip_type.
 
 
-def top_contributors(data, topn, flowdir, ip_type):
+def graph_top(data, topn, flowdir, ip_type):
     field = global_args.field
     try:
         # Filter records by flow direction
@@ -301,7 +301,7 @@ def top_contributors(data, topn, flowdir, ip_type):
     )
 
 
-def top_contributors_noncum(data, topn, flowdir, ip_type):
+def graph_hist(data, topn, flowdir, ip_type):
     graphdata = []
     field = 'bytes_in'
     try:

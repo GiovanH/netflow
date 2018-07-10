@@ -20,18 +20,23 @@ options = {
         lambda: print(",".join([l + "=" + util.sluggify(str(vars(args)[l])) for l in vars(args)]))
     ),
     "oniondump": (lambda: oniondump(copy.deepcopy(data))),
-    "hist_out_src": (lambda: ngraph.top_contributors_noncum(copy.deepcopy(data), args.num, '0', 'src_ip')),
-    "hist_in_src": (lambda: ngraph.top_contributors_noncum(copy.deepcopy(data), args.num, '1', 'src_ip')),
-    "top_out_src": (lambda: ngraph.top_contributors(copy.deepcopy(data), args.num, '0', 'src_ip')),
-    "top_in_src": (lambda: ngraph.top_contributors(copy.deepcopy(data), args.num, '1', 'src_ip')),
-    "top_percent_in_src": (lambda: ngraph.top_contributors_percent(copy.deepcopy(data), args.percent, '1', 'src_ip')),
-    "top_percent_out_src": (lambda: ngraph.top_contributors_percent(copy.deepcopy(data), args.percent, '0', 'src_ip')),
-    "top_percent_in_owners_src": (lambda: ngraph.top_owners_percent(copy.deepcopy(data), args.percent, '1', 'src_ip')),
-    "top_percent_out_owners_src": (lambda: ngraph.top_owners_percent(copy.deepcopy(data), args.percent, '0', 'src_ip')),
-    "top_percent_in_owners_dest": (lambda: ngraph.top_owners_percent(copy.deepcopy(data), args.percent, '1', 'dest_ip')),
-    "top_percent_out_owners_dest": (lambda: ngraph.top_owners_percent(copy.deepcopy(data), args.percent, '0', 'dest_ip')),
     "c": (lambda: print("C!"))
 }
+
+for f in [{'value': '1', 'name': 'in'}, {'value': '0', 'name': 'out'}]:
+    for ip in ['src', 'dest']:
+        options["_".join(["hist", f['name'], ip])] = (
+            lambda: ngraph.graph_hist(copy.deepcopy(data), args.num, f['value'], ip + '_ip')
+        )
+        options["_".join(["top", f['name'], ip])] = (
+            lambda: ngraph.graph_top(copy.deepcopy(data), args.num, f['value'], ip + '_ip')
+        )
+        options["_".join(["top_contributors", f['name'], ip])] = (
+            lambda: ngraph.graph_ippercent(copy.deepcopy(data), args.percent, f['value'], ip + '_ip')
+        )
+        options["_".join(["top_owners", f['name'], ip])] = (
+            lambda: ngraph.graph_icannpercent(copy.deepcopy(data), args.percent, f['value'], ip + '_ip')
+        )
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
                                  epilog="Valid command values for cmd: \n" + "\n    ".join(key for key in options.keys()))
