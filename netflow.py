@@ -33,16 +33,20 @@ def make_closure(function, arg2, flowdir, iptype):
 
 for f in [{'value': '1', 'name': 'in'}, {'value': '0', 'name': 'out'}]:
     for ip in ['src', 'dest']:
-        options["_".join(["hist", f['name'], ip])] = make_closure(ngraph.graph_hist, 'num', f['value'], ip + '_ip')
-        options["_".join(["top", f['name'], ip])] = make_closure(ngraph.graph_top, 'num', f['value'], ip + '_ip')
-        options["_".join(["ippercent", f['name'], ip])] = make_closure(ngraph.graph_ippercent, 'percent', f['value'], ip + '_ip')
-        options["_".join(["icannpercent", f['name'], ip])] = make_closure(ngraph.graph_icannpercent, 'percent', f['value'], ip + '_ip')
+        options["_".join(["hist", f['name'], ip])] = make_closure(
+            ngraph.graph_hist, 'num', f['value'], ip + '_ip')
+        options["_".join(["top", f['name'], ip])] = make_closure(
+            ngraph.graph_top, 'num', f['value'], ip + '_ip')
+        options["_".join(["ippercent", f['name'], ip])] = make_closure(
+            ngraph.graph_ippercent, 'percent', f['value'], ip + '_ip')
+        options["_".join(["icannpercent", f['name'], ip])] = make_closure(
+            ngraph.graph_icannpercent, 'percent', f['value'], ip + '_ip')
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
                                  epilog="Valid command values for cmd: \n" + "\n    ".join(key for key in options.keys()))
 
 parser.add_argument("files", help="Files to parse (glob)")
-parser.add_argument('--verbose', action='store_true', help='Verbose output for graphing data')
+parser.add_argument('--verbose', '-v', action='store_true', help='Verbose output for graphing data')
 
 parser.add_argument('--cap', type=int, default=-1,
                     help='Maximum individual entries to process. Used by the CSV parser.')

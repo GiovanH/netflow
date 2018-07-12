@@ -1,6 +1,6 @@
 #!/bin/bash
 
-files="../20180110/00*0.csv"
+files="../20180110/*0.csv"
 logfile="./logs/tests.log"
 # "C:/ProgramData/Anaconda3/python.exe" netflow.py \
 	# --nowindow \
@@ -16,16 +16,28 @@ rm -v ${logfile} 2>/dev/null
 echo Fileglob: "${files}"			| tee -a ${logfile}
 echo Files: ${files}			| tee -a ${logfile}
 
-for percent in 70
-# 50 85
+for percent in 70 50 85
 do
 	echo Percent: ${percent}			| tee -a ${logfile}
+	for file in ../20180110/*0.csv
+	do
+		"C:/ProgramData/Anaconda3/python.exe"  netflow.py \
+			--percent ${percent} \
+			--nowindow \
+			--verbose \
+			--scaletozero \
+			"${file}" \
+			icannpercent_out_dest icannpercent_out_src \
+														icannpercent_in_src  \
+			| tee -a ${logfile}
+	done
 	"C:/ProgramData/Anaconda3/python.exe"  netflow.py \
 		--percent ${percent} \
 		--nowindow \
 		--verbose \
+		--scaletozero \
 		"${files}" \
 		icannpercent_out_dest icannpercent_out_src \
-		icannpercent_in_dest  icannpercent_in_src  \
+													icannpercent_in_src  \
 		| tee -a ${logfile}
 done

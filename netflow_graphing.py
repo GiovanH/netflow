@@ -13,26 +13,28 @@ global_args = {}
 
 # Save a figure as an image.
 def savefig(glob, type, plt):
-    import datetime
+    # import datetime
     import os
     destpath = './out/' + util.sluggify(glob) + "/" + util.sluggify(type) + '/'
     try:
         os.makedirs(destpath)
     except FileExistsError:
         pass
-    plt.savefig(destpath + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p")
-                               ) + '.png', bbox_inches="tight")
+    # plt.savefig(destpath + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p")
+    #                            ) + '.png', bbox_inches="tight")
+    plt.savefig(destpath + 'graph' + '.png', bbox_inches="tight")
 
 
 def savelog(glob, type, text, titleappend=""):
-    import datetime
+    # import datetime
     import os
     destpath = './out/' + util.sluggify(glob) + "/" + util.sluggify(type) + '/'
     try:
         os.makedirs(destpath)
     except FileExistsError:
         pass
-    with open(destpath + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p") + titleappend) + '.log', "w") as file:
+    # with open(destpath + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p") + titleappend) + '.log', "w") as file:
+    with open(destpath + 'log' + titleappend + '.log', "w") as file:
         file.write(type + "\n")
         file.write(text)
 
@@ -51,11 +53,11 @@ def graphText(textstr, plt):
 
 
 # Abstract function to handle simple X/Y graphing
-def doGraph(title, xlabel, x, ylabel, y):
+def doGraph(command, title, xlabel, x, ylabel, y):
 
     # Verbose data save
     if global_args.verbose:
-        savelog(global_args.files, title, pformat(
+        savelog(global_args.files, command, pformat(
                 [[x[i], y[i]] for i in range(0, len(x))]
                 ), titleappend="_verbose_points"
                 )
@@ -73,7 +75,7 @@ def doGraph(title, xlabel, x, ylabel, y):
         plt.plot(x1, y1, '-r')
 
     # Plot x and y
-    plt.plot(x, y)
+    plt.plot(x, y, "bo-") # Blue circles, solid lines
 
     # Axis labels and formatting
     plt.ylabel(ylabel)
@@ -86,7 +88,7 @@ def doGraph(title, xlabel, x, ylabel, y):
         plt.ylim(ymin=0)
 
     # Save a copy of the figure.
-    savefig(global_args.files, title, plt)
+    savefig(global_args.files, command, plt)
 
     # Display graph in window, unless running in CLI only mode.
     if not global_args.nowindow:
@@ -101,6 +103,7 @@ def doGraph(title, xlabel, x, ylabel, y):
 
 def graph_ippercent(predata, percent, flowdir, ip_type):
     field = 'bytes_in'
+    command = "_".join(['ippercent',str(percent),flowdir,ip_type])
     try:
         # Filter out records that do not match the required flow direction.
         predata = [i for i in predata if i['flow_dir'] == flowdir]
@@ -167,9 +170,10 @@ def graph_ippercent(predata, percent, flowdir, ip_type):
         )
 
     graphText(logtxt, plt)
-    savelog(global_args.files, graphtitle, logtxt)
+    savelog(global_args.files, command, logtxt)
     # Do final graph.
     doGraph(
+        command,
         graphtitle,
         'Top contributors',
         list(range(1, len(graphdatax)+1)),
@@ -182,6 +186,7 @@ def graph_ippercent(predata, percent, flowdir, ip_type):
 
 def graph_icannpercent(data, percent, flowdir, ip_type):
     field = 'bytes_in'
+    command = "_".join(['icannpercent',str(percent),flowdir,ip_type])
     graphtitle = 'Cumulative traffic, ' + \
         ('incoming' if flowdir == '1' else 'outgoing') + \
         ", top " + str(percent) + '% of owners, by ' + ip_type
@@ -206,7 +211,7 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
 
         # Verbose data save
         if global_args.verbose:
-            savelog(global_args.files, graphtitle, pformat(data), titleappend="_verbose_ip_data"
+            savelog(global_args.files, command, pformat(data), titleappend="_verbose_ip_data"
                     )
 
         # Group by whois data
@@ -237,10 +242,11 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
     )
 
     graphText(logtxt, plt)
-    savelog(global_args.files, graphtitle, logtxt)
+    savelog(global_args.files, command, logtxt)
 
     # Do final graph.
     doGraph(
+        command,
         graphtitle,
         'Top contributors',
         list(range(1, len(graphdatax)+1)),
@@ -253,6 +259,7 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
 
 def graph_top(data, topn, flowdir, ip_type):
     field = global_args.field
+    command = "_".join(['top',str(topn),flowdir,ip_type])
     try:
         # Filter records by flow direction
         data = [i for i in data if i['flow_dir'] == flowdir]
@@ -289,8 +296,9 @@ def graph_top(data, topn, flowdir, ip_type):
         '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0, len(graphdatax))])
 
     graphText(logtxt, plt)
-    savelog(global_args.files, graphtitle, logtxt)
+    savelog(global_args.files, command, logtxt)
     doGraph(
+        command,
         graphtitle,
         'Top contributors',
         list(range(1, len(graphdatax)+1)),
@@ -301,6 +309,7 @@ def graph_top(data, topn, flowdir, ip_type):
 
 def graph_hist(data, topn, flowdir, ip_type):
     graphdata = []
+    command = "_".join(['hist',str(topn),flowdir,ip_type])
     field = 'bytes_in'
     try:
         # Filter records by flow direction
@@ -337,8 +346,9 @@ def graph_hist(data, topn, flowdir, ip_type):
         '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0, len(graphdatax))])
 
     graphText(logtxt, plt)
-    savelog(global_args.files, graphtitle, logtxt)
+    savelog(global_args.files, command, logtxt)
     doGraph(
+        command,
         graphtitle,
         'Top N contributor',
         list(range(1, len(graphdatax)+1)),
