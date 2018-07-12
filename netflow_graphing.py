@@ -75,7 +75,7 @@ def doGraph(command, title, xlabel, x, ylabel, y):
         plt.plot(x1, y1, '-r')
 
     # Plot x and y
-    plt.plot(x, y, "bo-") # Blue circles, solid lines
+    plt.plot(x, y, "bo-")  # Blue circles, solid lines
 
     # Axis labels and formatting
     plt.ylabel(ylabel)
@@ -103,7 +103,8 @@ def doGraph(command, title, xlabel, x, ylabel, y):
 
 def graph_ippercent(predata, percent, flowdir, ip_type):
     field = 'bytes_in'
-    command = "_".join(['ippercent',str(percent),flowdir,ip_type])
+    command = "_".join(
+        ['ippercent', str(percent), ('outgoing' if flowdir == 0 else 'incoming'), ip_type])
     try:
         # Filter out records that do not match the required flow direction.
         predata = [i for i in predata if i['flow_dir'] == flowdir]
@@ -186,7 +187,8 @@ def graph_ippercent(predata, percent, flowdir, ip_type):
 
 def graph_icannpercent(data, percent, flowdir, ip_type):
     field = 'bytes_in'
-    command = "_".join(['icannpercent',str(percent),flowdir,ip_type])
+    command = "_".join(['icannpercent', str(percent),
+                        ('outgoing' if flowdir == 0 else 'incoming'), ip_type])
     graphtitle = 'Cumulative traffic, ' + \
         ('incoming' if flowdir == '1' else 'outgoing') + \
         ", top " + str(percent) + '% of owners, by ' + ip_type
@@ -259,7 +261,7 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
 
 def graph_top(data, topn, flowdir, ip_type):
     field = global_args.field
-    command = "_".join(['top',str(topn),flowdir,ip_type])
+    command = "_".join(['top', str(topn), ('outgoing' if flowdir == 0 else 'incoming'), ip_type])
     try:
         # Filter records by flow direction
         data = [i for i in data if i['flow_dir'] == flowdir]
@@ -309,7 +311,7 @@ def graph_top(data, topn, flowdir, ip_type):
 
 def graph_hist(data, topn, flowdir, ip_type):
     graphdata = []
-    command = "_".join(['hist',str(topn),flowdir,ip_type])
+    command = "_".join(['hist', str(topn), ('outgoing' if flowdir == 0 else 'incoming'), ip_type])
     field = 'bytes_in'
     try:
         # Filter records by flow direction

@@ -3,6 +3,7 @@
 #Uses imagemagick to show graphs over time.
 
 mkdir montage 2>/dev/null
+rm -rv ./montage/*.png
 
 for command in `ls ./out/prev20180110_+0.csv/`
 do
