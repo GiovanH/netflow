@@ -43,8 +43,6 @@ def combine_data(data, equals, sortField):
             value = 0
             for entry in l:
                 try:
-                    if key == 'linenum':
-                        raise TypeError
                     value += entry[key]
                 except TypeError:
                     value = entry[key]
@@ -52,6 +50,30 @@ def combine_data(data, equals, sortField):
             combined[key] = value
         finaldata.append(combined)
     return finaldata
+
+def represent_poly(p, var_string='x'):
+    res = ''
+    first_pow = len(p) - 1
+    for i, coef in enumerate(p):
+        power = first_pow - i
+
+        if coef:
+            if coef < 0:
+                sign, coef = (' - ' if res else '- '), -coef
+            elif coef > 0:  # must be true
+                sign = (' + ' if res else '')
+
+            str_coef = '' if coef == 1 and power != 0 else str(coef)
+
+            if power == 0:
+                str_power = ''
+            elif power == 1:
+                str_power = var_string
+            else:
+                str_power = var_string + '^' + str(power)
+
+            res += sign + str_coef + str_power
+    return res
 
 
 def top_percent(predata, percent, field, total):

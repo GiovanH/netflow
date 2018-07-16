@@ -13,7 +13,6 @@ global_args = {}
 
 # Save a figure as an image.
 def savefig(glob, type, plt):
-    # import datetime
     import os
     destpath = './out/' + util.sluggify(glob) + "/" + util.sluggify(type) + '/'
     try:
@@ -22,11 +21,10 @@ def savefig(glob, type, plt):
         pass
     # plt.savefig(destpath + str(datetime.datetime.now().strftime("%Y-%m-%d_%I_%M_%S%p")
     #                            ) + '.png', bbox_inches="tight")
-    plt.savefig(destpath + 'graph' + '.png', bbox_inches="tight")
+    plt.savefig(destpath + 'graph' + ("_regression_" + str(global_args.regress) if global_args.regress is not None else '') + '.png', bbox_inches="tight")
 
 
 def savelog(glob, type, text, titleappend=""):
-    # import datetime
     import os
     destpath = './out/' + util.sluggify(glob) + "/" + util.sluggify(type) + '/'
     try:
@@ -53,7 +51,7 @@ def graphText(textstr, plt):
 
 
 # Abstract function to handle simple X/Y graphing
-def doGraph(command, title, xlabel, x, ylabel, y):
+def doGraph(command, title, xlabel, x, ylabel, y, clear=True, saveImage=True):
 
     # Verbose data save
     if global_args.verbose:
@@ -64,18 +62,29 @@ def doGraph(command, title, xlabel, x, ylabel, y):
 
     # Plot a regression, if asked.
     # This function is unfinished.
-    if global_args.regress:
-        from scipy import stats
-        gradient, intercept, r_value, p_value, std_err = stats.linregress(
-            list(range(1, len(graphdatax)+1)), graphdatay)
-        mn = np.min(graphdatax)
-        mx = np.max(graphdatax)
-        x1 = np.linspace(mn, mx, 500)
-        y1 = gradient*x1+intercept
-        plt.plot(x1, y1, '-r')
+    if global_args.regress is not None:
+        #do both
+        r = global_args.regress
+        global_args.regress = None
+        doGraph(command, title, xlabel, x, ylabel, y, clear=clear, saveImage=saveImage)
+        global_args.regress = r
+
+        print("Data regression with degree " + str(global_args.regress))
+        fit = np.polyfit(x, y, global_args.regress)
+        polynomstr = util.represent_poly([round(o,3) for o in fit])
+
+        fig, ax = plt.subplots()
+        print(polynomstr)
+        ax.text(0.95, 0.01, '$y=' + polynomstr + '$',
+                verticalalignment='bottom', horizontalalignment='right',
+                transform=ax.transAxes)
+        fit_fn = np.poly1d(fit)
+        # fit_fn is now a function which takes in x and returns an estimate for y
+        plt.plot(x, fit_fn(x), '--k', linestyle='solid',color='red')
 
     # Plot x and y
-    plt.plot(x, y, "bo-")  # Blue circles, solid lines
+    plt.plot(x, y, color='blue', marker='o', linestyle='none',
+        linewidth=2, markersize=3)  # Blue circles, solid lines
 
     # Axis labels and formatting
     plt.ylabel(ylabel)
@@ -87,8 +96,9 @@ def doGraph(command, title, xlabel, x, ylabel, y):
     if global_args.scaletozero:
         plt.ylim(ymin=0)
 
-    # Save a copy of the figure.
-    savefig(global_args.files, command, plt)
+    if saveImage:
+        # Save a copy of the figure.
+        savefig(global_args.files, command, plt)
 
     # Display graph in window, unless running in CLI only mode.
     if not global_args.nowindow:
@@ -96,7 +106,8 @@ def doGraph(command, title, xlabel, x, ylabel, y):
         plt.show()
 
     # Clear any old data on the canvas
-    plt.clf()
+    if clear:
+        plt.clf()
 
 # Graph cumulative traffic of the top %[percent] of traffic contributors. Filtered by flowdir and ip_type.
 
@@ -104,7 +115,7 @@ def doGraph(command, title, xlabel, x, ylabel, y):
 def graph_ippercent(predata, percent, flowdir, ip_type):
     field = 'bytes_in'
     command = "_".join(
-        ['ippercent', str(percent), ('outgoing' if flowdir == 0 else 'incoming'), ip_type])
+        ['ippercent', str(percent), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
     try:
         # Filter out records that do not match the required flow direction.
         predata = [i for i in predata if i['flow_dir'] == flowdir]
@@ -188,7 +199,7 @@ def graph_ippercent(predata, percent, flowdir, ip_type):
 def graph_icannpercent(data, percent, flowdir, ip_type):
     field = 'bytes_in'
     command = "_".join(['icannpercent', str(percent),
-                        ('outgoing' if flowdir == 0 else 'incoming'), ip_type])
+                        ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
     graphtitle = 'Cumulative traffic, ' + \
         ('incoming' if flowdir == '1' else 'outgoing') + \
         ", top " + str(percent) + '% of owners, by ' + ip_type
@@ -261,7 +272,7 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
 
 def graph_top(data, topn, flowdir, ip_type):
     field = global_args.field
-    command = "_".join(['top', str(topn), ('outgoing' if flowdir == 0 else 'incoming'), ip_type])
+    command = "_".join(['top', str(topn), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
     try:
         # Filter records by flow direction
         data = [i for i in data if i['flow_dir'] == flowdir]
@@ -311,7 +322,7 @@ def graph_top(data, topn, flowdir, ip_type):
 
 def graph_hist(data, topn, flowdir, ip_type):
     graphdata = []
-    command = "_".join(['hist', str(topn), ('outgoing' if flowdir == 0 else 'incoming'), ip_type])
+    command = "_".join(['hist', str(topn), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
     field = 'bytes_in'
     try:
         # Filter records by flow direction

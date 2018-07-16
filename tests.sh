@@ -2,6 +2,8 @@
 
 files="../20180110/*0.csv"
 logfile="./logs/tests.log"
+polynomial=4
+moreargs="--scaletozero"
 # "C:/ProgramData/Anaconda3/python.exe" netflow.py \
 	# --nowindow \
 	# --verbose \
@@ -16,16 +18,32 @@ rm -v ${logfile} 2>/dev/null
 echo Fileglob: "${files}"			| tee -a ${logfile}
 echo Files: ${files}			| tee -a ${logfile}
 
-for percent in 70 50 85
+
+
+for percent in 70
 do
-	echo Percent: ${percent}			| tee -a ${logfile}
-	for file in ../20180110/*0.csv
+	for polynomial in 2 3 4 5
 	do
 		"C:/ProgramData/Anaconda3/python.exe"  netflow.py \
 			--percent ${percent} \
 			--nowindow \
 			--verbose \
-			--scaletozero \
+			${moreargs} \
+			--regress $polynomial\
+			"${files}" \
+			icannpercent_out_dest icannpercent_out_src \
+														icannpercent_in_src  \
+			| tee -a ${logfile}
+	done
+	echo Percent: ${percent}			| tee -a ${logfile}
+	for file in $files
+	do
+		"C:/ProgramData/Anaconda3/python.exe"  netflow.py \
+			--percent ${percent} \
+			--nowindow \
+			--verbose \
+			${moreargs} \
+			--regress $polynomial\
 			"${file}" \
 			icannpercent_out_dest icannpercent_out_src \
 														icannpercent_in_src  \
@@ -35,9 +53,13 @@ do
 		--percent ${percent} \
 		--nowindow \
 		--verbose \
-		--scaletozero \
+		${moreargs} \
+		--regress $polynomial\
 		"${files}" \
 		icannpercent_out_dest icannpercent_out_src \
 													icannpercent_in_src  \
 		| tee -a ${logfile}
 done
+
+
+./montage.sh

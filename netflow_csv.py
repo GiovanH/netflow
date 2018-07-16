@@ -20,15 +20,15 @@ def opencsv(globstr, args):
             sheet = []
             i = 1
             for row in reader:
+                i += 1
                 row['filename'] = filename
-                row['linenum'] = i
+                row['linenum'] = str(i)
                 # sheet.append(dict(row))
                 # Let's only read the fields we're interested in, to save time.
-                sheet.append({field: row[field] for field in ['bytes_in', 'dest_ip', 'flow_dir', 'src_ip', 'linenum']})
+                sheet.append({field: row[field] for field in ['bytes_in', 'dest_ip', 'flow_dir', 'src_ip', 'linenum', 'filename']})
                 # if row['src_ip'] == "10.189.40.74" and row['dest_ip'] == "10.100.12.41":
                 #     print(i)
                 #     print(row)
-                i += 1
                 args.cap -= 1
                 if (args.cap == 0):
                     break
@@ -39,7 +39,7 @@ def opencsv(globstr, args):
         sys.stdout.flush()
 
         # Conservatively compress data
-        print("Compressing file")
+        print("Consolidating file records")
         sys.stdout.flush()
         sheet = util.combine_data(sheet, lambda a, b: (
             a['flow_dir'] == b['flow_dir'] and a['src_ip'] == b['src_ip'] and a['dest_ip'] == b['dest_ip']

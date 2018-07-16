@@ -1,6 +1,6 @@
-Done: 
+Done:
 
-Flow direction: 
+Flow direction:
 Incoming traffic is 1
 Outgoing traffic is 0
 
@@ -10,18 +10,16 @@ Draw graphs for destinations as well as sources.
 Build a cache for whois info.
 Run whois on ip addresses for more insightful logs. Look at top-level ip block info from whois. Convert IP blocks to binary for simple range comparisons.
 
-
-Not done:
-
 Verify "outgoing by source" and "outgoing by destination"
-Log ports as well as IP addresses in verbose output
-
-Programatically generate commands
+Programatically generate commands (more or less)
 
 Graph by time of day
 
 Shorter folder names for output
 Stop graphing top_contributors and top_percent for now
+
+
+Not done:
 
 Graph a stack chart of IP addresses grouped by whois data
 

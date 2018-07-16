@@ -2,6 +2,8 @@
 #Seth Giovanetti
 #Uses imagemagick to show graphs over time.
 
+echo Working Magick
+
 mkdir montage 2>/dev/null
 rm -rv ./montage/*.png
 
@@ -17,7 +19,7 @@ do
       magick="$magick $image"
     done
   done
-  magick="$magick  -geometry 100% montage/$command.png"
-  echo $magick
+  magick="$magick  -geometry 100% -tile 8x3 -gravity north -shadow montage/$command.png"
+  # echo $magick
   `$magick`
 done

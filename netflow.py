@@ -50,8 +50,8 @@ parser.add_argument('--verbose', '-v', action='store_true', help='Verbose output
 
 parser.add_argument('--cap', type=int, default=-1,
                     help='Maximum individual entries to process. Used by the CSV parser.')
-parser.add_argument('--regress', '-r', action='store_true',
-                    help='Attempt linear regression on the output graph.')
+parser.add_argument('--regress', '-r', type=int, default=None,
+                    help='Attempt linear regression on the output graph. Pass it a degree of a polynomial.')
 parser.add_argument('--nowhois', action='store_true',
                     help='Do not run whois lookup on IP addresses.')
 parser.add_argument('--nowindow', action='store_true',
