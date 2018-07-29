@@ -7,7 +7,7 @@ import netflow_util as util
 import sys
 
 
-def opencsv(globstr, args):
+def opencsv(globstr, cap):
     data = []
     for filename in glob.glob(globstr):
         print(filename)
@@ -23,14 +23,15 @@ def opencsv(globstr, args):
                 i += 1
                 row['filename'] = filename
                 row['linenum'] = str(i)
+                row['time'] = row['_time'][11:15]
                 # sheet.append(dict(row))
                 # Let's only read the fields we're interested in, to save time.
-                sheet.append({field: row[field] for field in ['bytes_in', 'dest_ip', 'flow_dir', 'src_ip', 'linenum', 'filename']})
+                sheet.append({field: row[field] for field in ['bytes_in', 'dest_ip', 'flow_dir', 'src_ip', 'linenum', 'time', 'filename']})
                 # if row['src_ip'] == "10.189.40.74" and row['dest_ip'] == "10.100.12.41":
                 #     print(i)
                 #     print(row)
-                args.cap -= 1
-                if (args.cap == 0):
+                cap -= 1
+                if (cap == 0):
                     break
                 if (i % 50000 == 0):
                     print('#', end='')

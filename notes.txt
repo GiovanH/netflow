@@ -21,6 +21,12 @@ Stop graphing top_contributors and top_percent for now
 
 Not done:
 
+Chart plotting multiple sources over time of day
+Volume of requests (number of flows) instead of total bytes
+Histogram of total traffic by time more granular than hourly (15 mins?)
+
+Weekly average rather than daily
+
 Graph a stack chart of IP addresses grouped by whois data
 
 Find the diameter of the network using traceroute

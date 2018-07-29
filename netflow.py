@@ -41,6 +41,8 @@ for f in [{'value': '1', 'name': 'in'}, {'value': '0', 'name': 'out'}]:
             ngraph.graph_ippercent, 'percent', f['value'], ip + '_ip')
         options["_".join(["icannpercent", f['name'], ip])] = make_closure(
             ngraph.graph_icannpercent, 'percent', f['value'], ip + '_ip')
+        options["_".join(["icannstacktime", f['name'], ip])] = make_closure(
+            ngraph.graph_icannstacktime, 'num', f['value'], ip + '_ip')
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
                                  epilog="Valid command values for cmd: \n" + "\n    ".join(key for key in options.keys()))
@@ -85,7 +87,7 @@ data = []
 # Read data in from CSV files.
 # Data is based on a file glob to CSV files that are expected to be netflow exports.
 # try:
-data = ncsv.opencsv(args.files, args)
+data = ncsv.opencsv(args.files, args.cap)
 # except:
 #     print("Error reading files")
 #     traceback.print_exc(file=sys.stdout)
@@ -101,14 +103,14 @@ def oniondump(data):
             print(r)
 
 
-try:
-    for c in args.cmds:
-        sys.stdout.flush()
-        print('####################################')
-        print('###    ' + c)
-        print('####################################')
-        options[c]()
-except KeyError:
-    print("No such command " + c)
-    print("Valid commands are:")
-    print(", ".join(key for key in options.keys()))
+# try:
+for c in args.cmds:
+    sys.stdout.flush()
+    print('####################################')
+    print('###    ' + c)
+    print('####################################')
+    options[c]()
+# except KeyError:
+#     print("No such command " + c)
+#     print("Valid commands are:")
+#     print(", ".join(key for key in options.keys()))

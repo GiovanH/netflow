@@ -9,6 +9,10 @@ def simple_combine_data(data, sortField):
     return combine_data(data, lambda a, b: a[sortField] == b[sortField], sortField)
 
 
+def multi_combine_data(data, sortFields):
+    return combine_data(data, lambda a, b: all(a[sortField] == b[sortField] for sortField in sortFields), sortFields[0])
+
+
 def combine_data(data, equals, sortField):
     # Combines records in data based on the equals function.
     # Only sequential entries after sorting by sortfield will be combined.

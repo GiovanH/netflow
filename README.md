@@ -49,13 +49,18 @@ Graphs a cumulative curve of the top contributors, sorted. Capped by a user-prov
 
 ### top_percent_[dir]
 
-Graphs a cumulative curve of the top contributors, sorted. Capped by a user-provided percentage. 
+Graphs a cumulative curve of the top contributors, sorted. Capped by a user-provided percentage.
 
 ### top_percent\_[dir]\_owners
 
-Graphs a cumulative curve of the top contributors, where contributors are grouped by the whois domain owner according to ICANN. Capped by a user-provided percentage. 
+Graphs a cumulative curve of the top contributors, where contributors are grouped by the whois domain owner according to ICANN. Capped by a user-provided percentage.
 
+## Algorithms Used
 
+icannpercent:
+1. Start with "data," a list of records.
+2. Remove all records whose flow direction does not match the filter.
+3. Combine all records whose IP address is the same.
 
 ## Example output:
 
