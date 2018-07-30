@@ -32,3 +32,9 @@ Graph a stack chart of IP addresses grouped by whois data
 Find the diameter of the network using traceroute
 Research methods of anonymizing data
 Check patterns against Zipf's law
+
+To discuss:
+
+VPN issues
+Algorithms for stack Chart
+How the algorithm might miss a high volume of small results
