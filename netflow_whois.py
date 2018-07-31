@@ -1,9 +1,8 @@
 #!/bin/python3
 
-import netflow_util as util
+import jfileutil as j
 import ipwhois
 import pprint
-import traceback
 import warnings
 
 whoisData = {}
@@ -18,7 +17,7 @@ with warnings.catch_warnings():
 def loadWhois():
     global whoisData  # Necessary to modifiy whoisData
     try:
-        whoisData = util.pickleLoad(cachefilename)
+        whoisData = j.load(cachefilename)
         print("Loaded whois cache with " + str(len(whoisData)) + " entries")
     except FileNotFoundError:
         print("Warning! Whois database not found. It will be rebuilt as needed.")
@@ -26,7 +25,7 @@ def loadWhois():
 
 
 def saveWhois():
-    util.pickleSave(whoisData, cachefilename)
+    j.save(whoisData, cachefilename)
 
 
 def populateDatabase(addresses, verbose=False, force=False):
@@ -34,13 +33,14 @@ def populateDatabase(addresses, verbose=False, force=False):
     if whoisData == {}:
         loadWhois()
     for ip in addresses:
+        print(ip)
         try:
             # Validate cached data.
             ipdata = whoisData[ip]
             if not (force is False and
-                ipdata.get('good') is True and
-                ipdata.get('version') == 1.0 and
-                ipdata.get('owner') is not None):
+                    ipdata.get('good') is True and
+                    ipdata.get('version') == 1.0 and
+                    ipdata.get('owner') is not None):
                 raise KeyError('Data does not meet standards')
         except KeyError:
             whoisData[ip] = {}
@@ -54,9 +54,7 @@ def populateDatabase(addresses, verbose=False, force=False):
                 whoisData[ip]['owner'] = ipdata['asn_description']
             except ipwhois.exceptions.IPDefinedError:
                 whoisData[ip]['owner'] = "INTERNAL"
-                # print(traceback.format_exc())
             except ipwhois.exceptions.HTTPLookupError:
-                # print(traceback.format_exc())
                 whoisData[ip]['owner'] = "UNKNOWN"
                 whoisData[ip]['good'] = False
                 print("Error looking up IP address " + ip)

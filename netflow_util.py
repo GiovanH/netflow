@@ -80,8 +80,14 @@ def represent_poly(p, var_string='x'):
     return res
 
 
-def top_percent(predata, percent, field, total):
+def top_percent(predata, percent, field):
     totalrecords = len(predata)
+
+    # Calculate total.
+    total = 0
+    for point in data:
+        point['bytes_in'] = int(point['bytes_in'])
+        total += point['bytes_in']
 
     # Get top 10 records by bytes_in
     # Sorts the list by field (bytes_in), gets the #n... #2, #1 entries.
@@ -100,43 +106,6 @@ def top_percent(predata, percent, field, total):
         data.append(newrecord)
     print("Records included: " + str(len(data)) + '/' + str(totalrecords))
     return data
-
-
-def pickleLoad(filename):
-    """
-    TODO: Docstring
-    Description in english.
-
-    Returns: Return type
-
-    Parameters:
-    parameter -- description
-    """
-    filehandler = open(path(filename), 'rb')
-    object = pickle.load(filehandler)
-    return object
-
-
-def pickleSave(object, filename):
-    """
-    TODO: Docstring
-    Description in english.
-
-    Returns: Return type
-
-    Parameters:
-    parameter -- description
-    """
-    print("Saving " + path(filename))
-    try:
-        os.makedirs(path(filename)[:path(filename).rindex('/')])
-    except FileExistsError:
-        pass
-    filehandler = open(path(filename), 'wb')
-    inst = pickle.Pickler(filehandler)
-    inst.dump(object)
-    inst.clear_memo()
-
 
 def path(file):
     return "obj/" + file.replace(".", "_").replace("\\", "_") + ".obj"

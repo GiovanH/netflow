@@ -105,10 +105,10 @@ def oniondump(data):
 
 # try:
 for c in args.cmds:
-    sys.stdout.flush()
     print('####################################')
     print('###    ' + c)
     print('####################################')
+    sys.stdout.flush()
     options[c]()
 # except KeyError:
 #     print("No such command " + c)

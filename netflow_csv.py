@@ -23,6 +23,7 @@ def opencsv(globstr, cap):
                 i += 1
                 row['filename'] = filename
                 row['linenum'] = str(i)
+                row['bytes_in'] = int(row['bytes_in'])
                 row['time'] = row['_time'][11:15]
                 # sheet.append(dict(row))
                 # Let's only read the fields we're interested in, to save time.
@@ -38,13 +39,6 @@ def opencsv(globstr, cap):
                     sys.stdout.flush()
         print(']')
         sys.stdout.flush()
-
-        # Conservatively compress data
-        print("Consolidating file records")
-        sys.stdout.flush()
-        sheet = util.combine_data(sheet, lambda a, b: (
-            a['flow_dir'] == b['flow_dir'] and a['src_ip'] == b['src_ip'] and a['dest_ip'] == b['dest_ip']
-        ), 'src_ip')
         data += sheet
     # print(data)
     return data

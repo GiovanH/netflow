@@ -61,6 +61,8 @@ icannpercent:
 1. Start with "data," a list of records.
 2. Remove all records whose flow direction does not match the filter.
 3. Combine all records whose IP address is the same.
+4. Take only the top XX percent of those
+5.
 
 ## Example output:
 
