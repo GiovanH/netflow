@@ -14,9 +14,10 @@ def multi_combine_data(data, sortFields):
 
 
 def combine_data(data, equals, sortField):
+    initial_length = len(data)
     # Combines records in data based on the equals function.
     # Only sequential entries after sorting by sortfield will be combined.
-    if len(data) is 0:
+    if initial_length is 0:
         print("Warning! Data is empty!")
         return data
     data_sorted = sorted(data, key=lambda k: k[sortField])
@@ -53,7 +54,9 @@ def combine_data(data, equals, sortField):
                     break
             combined[key] = value
         finaldata.append(combined)
+    print("Shrunk data from " + str(initial_length) + " to " + str(len(finaldata)))
     return finaldata
+
 
 def represent_poly(p, var_string='x'):
     res = ''

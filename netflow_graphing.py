@@ -205,9 +205,10 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
     # Filter out records that do not match the required flow direction.
     data = [i for i in data if i['flow_dir'] == flowdir]
 
+    # Group records by IP address only.
+    data = util.simple_combine_data(data, ip_type)
     # Append whois data to the full data set
     whois.appendOwnerData(data, ip_type)
-
     # Group records by whois owner.
     data = util.simple_combine_data(data, "whois_owner_" + ip_type)
 
@@ -270,16 +271,18 @@ def graph_icannstacktime(data, topn, flowdir, ip_type):
     # Sorts the list by bytes_in, gets the #n... #2, #1 entries, then reverses that list.
     data = sorted(data, key=lambda k: k['bytes_in'])[-topn:][::-1]
 
+    # Group by IP, retaining time info
+    data = util.multi_combine_data(data, [ip_type, 'time'])
     # Append whois data to this reduced data set
     whois.appendOwnerData(data, ip_type)
+    # Group by whois data, retaining time info
+    data = util.multi_combine_data(data, ["whois_owner_" + ip_type, 'time'])
 
     # Verbose data save
     if global_args.verbose:
         savelog(global_args.files, command, pformat(data), titleappend="_verbose_ip_data"
                 )
 
-    # Group by whois data, retaining time info
-    data = util.multi_combine_data(data, ["whois_owner_" + ip_type, 'time'])
 
     # Sort reduced data set
     data = sorted(data, key=lambda k: k['bytes_in'])[::-1]

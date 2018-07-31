@@ -33,7 +33,6 @@ def populateDatabase(addresses, verbose=False, force=False):
     if whoisData == {}:
         loadWhois()
     for ip in addresses:
-        print(ip)
         try:
             # Validate cached data.
             ipdata = whoisData[ip]
