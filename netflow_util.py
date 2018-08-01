@@ -3,6 +3,7 @@
 
 import os
 
+
 def simple_combine_data(data, sortField):
     return combine_data(data, lambda a, b: a[sortField] == b[sortField], sortField)
 
@@ -121,6 +122,7 @@ def top_percent(predata, percent, field):
         data.append(newrecord)
     print("Records included: " + str(len(data)) + '/' + str(totalrecords))
     return data
+
 
 def sluggify(value):
     """

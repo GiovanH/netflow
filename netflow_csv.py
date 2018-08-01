@@ -24,13 +24,10 @@ def opencsv(globstr, cap):
                 row['filename'] = filename
                 row['linenum'] = str(i)
                 row['bytes_in'] = int(row['bytes_in'])
-                row['time'] = row['_time'][11:15]
-                # sheet.append(dict(row))
+                row['time'] = row['_time'][11:13]
+
                 # Let's only read the fields we're interested in, to save time.
                 sheet.append({field: row[field] for field in ['bytes_in', 'dest_ip', 'flow_dir', 'src_ip', 'linenum', 'time', 'filename']})
-                # if row['src_ip'] == "10.189.40.74" and row['dest_ip'] == "10.100.12.41":
-                #     print(i)
-                #     print(row)
                 cap -= 1
                 if (cap == 0):
                     break
@@ -39,6 +36,7 @@ def opencsv(globstr, cap):
                     sys.stdout.flush()
         print(']')
         sys.stdout.flush()
+        # sheet = util.multi_combine_data(sheet, ['dest_ip', 'flow_dir', 'src_ip', 'time', 'filename'])
         data += sheet
     # print(data)
     return data

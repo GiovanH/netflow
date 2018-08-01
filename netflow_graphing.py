@@ -61,7 +61,7 @@ def graphText(textstr, plt):
 
 # Does everything but plot the graph. Useful if you don't want to use plt.plot.
 # This should be run last, as it also handles saving the graph as an image.
-def doGraphMeta(command, title, xlabel, ylabel, saveImage=True, clear=True):
+def doGraphMeta(command, title, xlabel, ylabel, saveImage=True, clear=True, titleappend=""):
     # Apply axis labels, graph title, and tick formatting.
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
@@ -75,9 +75,7 @@ def doGraphMeta(command, title, xlabel, ylabel, saveImage=True, clear=True):
 
     # Save a copy of the figure, if requested.
     if saveImage:
-        # Append regression text, if a regression is included.
-        t = "_regression_" + str(global_args.regress) if global_args.regress is not None else ''
-        savefig(global_args.files, command, plt, titleappend=(t))
+        savefig(global_args.files, command, plt, titleappend=titleappend)
 
     # Display graph in window, unless running in CLI only mode.
     if not global_args.nowindow:
@@ -91,7 +89,7 @@ def doGraphMeta(command, title, xlabel, ylabel, saveImage=True, clear=True):
 
 
 # Abstract function to handle simple X/Y graphing
-def doGraph(command, title, xlabel, x, ylabel, y, clear=True, saveImage=True, regress=None, points=True):
+def doGraph(command, title, xlabel, x, ylabel, y, clear=True, saveImage=True, regress=None, points=True, titleappend=""):
     # Verbose data save
     if global_args.verbose:
         savelog(global_args.files, command, pformat(
@@ -104,6 +102,9 @@ def doGraph(command, title, xlabel, x, ylabel, y, clear=True, saveImage=True, re
         # This has the side effect of "using up" any data that was already on the canvas, like IP logs. That's fine.
         doGraph(command, title, xlabel, x, ylabel, y,
                 clear=clear, saveImage=saveImage, regress=None)
+
+        # This file's title should have a regression title
+        titleappend += "_regression"
 
         print("Data regression with degree " + str(regress))
         fit = np.polyfit(x, y, regress)  # Get the polynomial fit, e.g. the polynomial coefficients.
@@ -131,7 +132,7 @@ def doGraph(command, title, xlabel, x, ylabel, y, clear=True, saveImage=True, re
         plt.plot(x, y, color='blue', marker='o', linestyle='solid',
                  linewidth=2, markersize=3)  # Blue circles, solid lines
 
-    doGraphMeta(command, title, xlabel, ylabel, saveImage=saveImage, clear=clear)
+    doGraphMeta(command, title, xlabel, ylabel, saveImage=saveImage, clear=clear, titleappend=titleappend)
 
 
 # Graph cumulative traffic of the top %[percent] of traffic contributors. Filtered by flowdir and ip_type.
@@ -162,7 +163,6 @@ def graph_ippercent(data, percent, flowdir, ip_type):
     # Create seperate X and Y arrays based on sort fields
     graphdatay = np.array([point['bytes_in'] for point in data])
     graphdatax = np.array([point[ip_type] for point in data])
-
 
     # Log which IP addresses account for which rank.
     # Also, run whois comparison if whois is requested.
@@ -280,7 +280,6 @@ def graph_icannstacktime(data, topn, flowdir, ip_type):
         savelog(global_args.files, command, pformat(data), titleappend="_verbose_ip_data"
                 )
 
-
     # Sort reduced data set
     data = sorted(data, key=lambda k: k['bytes_in'])[::-1]
 
@@ -291,7 +290,6 @@ def graph_icannstacktime(data, topn, flowdir, ip_type):
     # graphText(logtxt, plt)
     # savelog(global_args.files, command, logtxt)
 
-    #Graphdata.  dff
     # Our X values will be TIME.
     data = sorted(data, key=lambda k: k['time'])
     x = [point['time'] for point in data]
@@ -312,7 +310,7 @@ def graph_icannstacktime(data, topn, flowdir, ip_type):
 
     if global_args.verbose:
         savelog(global_args.files, command, pformat(
-            [x,ys]
+            [x, ys]
         ), titleappend="_verbose_points"
         )
 
@@ -327,6 +325,7 @@ def graph_icannstacktime(data, topn, flowdir, ip_type):
         'Top contributors',
         'Total ' + 'bytes_in'
     )
+
 
 # Graph cumulative traffic of the top [topn] of traffic contributors. Filtered by flowdir and ip_type.
 def graph_top(data, topn, flowdir, ip_type):
@@ -346,7 +345,6 @@ def graph_top(data, topn, flowdir, ip_type):
     graphdatay = np.array([point['bytes_in'] for point in data])
     graphdatax = np.array([point[ip_type] for point in data])
     # print(graphdatax,graphdatay)
-
 
     graphtitle = 'Cumulative traffic, ' + \
         ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(topn) + ' by ' + ip_type

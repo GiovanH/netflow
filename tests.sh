@@ -3,10 +3,10 @@
 anaconda3="C:/ProgramData/anaconda3/python.exe -u	"
 
 
-files="../20180110/01*0.csv"
+files="../20180110/*.csv"
 logfile="./logs/tests.log"
 polynomial=4
-moreargs="--scaletozero --cap 10000"
+moreargs="--scaletozero"
 percents="70"
 # $anaconda3 netflow.py \
 	# --nowindow \
@@ -27,19 +27,6 @@ echo Files: ${files}			| tee -a ${logfile}
 for percent in ${percents}
 do
 	echo Percent: ${percent}			| tee -a ${logfile}
-	for file in $files
-	do
-		$anaconda3  netflow.py \
-			--percent ${percent} \
-			--nowindow \
-			--verbose \
-			${moreargs} \
-			--regress $polynomial\
-			"${file}" \
-			icannpercent_out_dest icannpercent_out_src \
-			icannpercent_in_src  \
-			| tee -a ${logfile}
-	done
 	$anaconda3  netflow.py \
 		--percent ${percent} \
 		--nowindow \
@@ -50,6 +37,19 @@ do
 		icannpercent_out_dest icannpercent_out_src \
 		icannpercent_in_src  \
 		| tee -a ${logfile}
+	# for file in $files
+	# do
+	# 	$anaconda3  netflow.py \
+	# 		--percent ${percent} \
+	# 		--nowindow \
+	# 		--verbose \
+	# 		${moreargs} \
+	# 		--regress $polynomial\
+	# 		"${file}" \
+	# 		icannpercent_out_dest icannpercent_out_src \
+	# 		icannpercent_in_src  \
+	# 		| tee -a ${logfile}
+	# done
 done
 
 
