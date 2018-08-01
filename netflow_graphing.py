@@ -192,6 +192,7 @@ def graph_ippercent(data, percent, flowdir, ip_type):
         regress=global_args.regress
     )
 
+
 # Graph cumulative traffic of the top %[percent] of traffic contributors. Filtered by flowdir and ip_type.
 def graph_icannpercent(data, percent, flowdir, ip_type):
     # Write a unique name for this command.
@@ -217,11 +218,7 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
 
     # Verbose data save
     if global_args.verbose:
-        savelog(global_args.files, command, pformat(data), titleappend="_verbose_ip_data"
-                )
-
-    # Group by whois data
-    data = util.simple_combine_data(data, "whois_owner_" + ip_type)
+        savelog(global_args.files, command, pformat(data), titleappend="_verbose_ip_data")
 
     # Sort reduced data set
     data = sorted(data, key=lambda k: k['bytes_in'])[::-1]

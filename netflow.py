@@ -2,15 +2,15 @@
 # Seth Giovanetti
 
 import argparse
-
-import traceback
 import sys
-import netflow_csv as ncsv
-import netflow_graphing as ngraph
-import netflow_util as util
 import copy
 
 from pprint import pformat
+
+import netflow_csv as ncsv
+import netflow_graphing as ngraph
+import netflow_util as util
+
 
 options = {
     "dump": (
@@ -86,11 +86,8 @@ data = []
 
 # Read data in from CSV files.
 # Data is based on a file glob to CSV files that are expected to be netflow exports.
-# try:
+
 data = ncsv.opencsv(args.files, args.cap)
-# except:
-#     print("Error reading files")
-#     traceback.print_exc(file=sys.stdout)
 
 
 def dump(data):

@@ -1,5 +1,6 @@
 __pycache__
-obj/*
+jobj/whoiscache.json
+jobj/err/*
 *.lnk
 img/*
 logs/*

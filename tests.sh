@@ -1,12 +1,12 @@
 #!/bin/bash
 
-anaconda3="C:/ProgramData/anaconda3/python.exe -u"
+anaconda3="C:/ProgramData/anaconda3/python.exe -u	"
 
 
 files="../20180110/01*0.csv"
 logfile="./logs/tests.log"
 polynomial=4
-moreargs="--scaletozero"
+moreargs="--scaletozero --cap 10000"
 percents="70"
 # $anaconda3 netflow.py \
 	# --nowindow \
@@ -53,4 +53,4 @@ do
 done
 
 
-./montage.sh
+# ./montage.sh

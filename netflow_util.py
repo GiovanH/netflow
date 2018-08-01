@@ -1,9 +1,7 @@
 #!/bin/python3
 # Seth Giovanetti
 
-import pickle
 import os
-
 
 def simple_combine_data(data, sortField):
     return combine_data(data, lambda a, b: a[sortField] == b[sortField], sortField)
@@ -20,7 +18,21 @@ def combine_data(data, equals, sortField):
     if initial_length is 0:
         print("Warning! Data is empty!")
         return data
-    data_sorted = sorted(data, key=lambda k: k[sortField])
+    try:
+        data_sorted = sorted(data, key=lambda k: k[sortField])
+    except TypeError:
+        print("SortField: " + sortField)
+        print("Availible fields: " + str(data[0].keys()))
+        print("Bad points: ")
+        i = 0
+        for point in data:
+            if i > 10:
+                print("...")
+                break
+            if point.get(sortField) is None:
+                print(point)
+                i += 1
+        raise
     p = data_sorted.pop()
     groups = []
     group = [p]
@@ -87,10 +99,10 @@ def top_percent(predata, percent, field):
     totalrecords = len(predata)
 
     # Calculate total.
-    total = 0
-    for point in data:
+    totalvalue = 0
+    for point in predata:
         point['bytes_in'] = int(point['bytes_in'])
-        total += point['bytes_in']
+        totalvalue += point['bytes_in']
 
     # Get top 10 records by bytes_in
     # Sorts the list by field (bytes_in), gets the #n... #2, #1 entries.
@@ -103,16 +115,12 @@ def top_percent(predata, percent, field):
 
     # Calculate top % of data, and use that as the data we graph
     # Until the amount of data we have exceeds %[percent], move a data point into our final list.
-    while len(predata) > 0 and included < total*(percent/100):
+    while len(predata) > 0 and included < totalvalue*(percent/100):
         newrecord = predata.pop()
         included += newrecord[field]
         data.append(newrecord)
     print("Records included: " + str(len(data)) + '/' + str(totalrecords))
     return data
-
-def path(file):
-    return "obj/" + file.replace(".", "_").replace("\\", "_") + ".obj"
-
 
 def sluggify(value):
     """

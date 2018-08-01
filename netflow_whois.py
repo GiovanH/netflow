@@ -3,15 +3,12 @@
 import jfileutil as j
 import ipwhois
 import pprint
-import warnings
+import traceback
 
 whoisData = {}
 cachefilename = "whoiscache"
 
-# Suppress ipwhois depreciation warnings. This is an issue with the core library and should be updated soon.
-
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=UserWarning)
+DATA_VERSION = 1.0
 
 
 def loadWhois():
@@ -25,6 +22,7 @@ def loadWhois():
 
 
 def saveWhois():
+    print("WHOIS: Saving whois cache")
     j.save(whoisData, cachefilename)
 
 
@@ -32,31 +30,49 @@ def populateDatabase(addresses, verbose=False, force=False):
     global whoisData  # Necessary to modifiy whoisData
     if whoisData == {}:
         loadWhois()
+    i = 0
     for ip in addresses:
         try:
             # Validate cached data.
             ipdata = whoisData[ip]
-            if not (force is False and
-                    ipdata.get('good') is True and
-                    ipdata.get('version') == 1.0 and
-                    ipdata.get('owner') is not None):
-                raise KeyError('Data does not meet standards')
-        except KeyError:
+            if not (force is False):
+                raise KeyError('Force')
+            if ipdata.get('good') is not True:
+                raise KeyError(ip + ' Not Good')
+            if ipdata.get('version') != DATA_VERSION:
+                raise KeyError(ip + ' Outdated')
+            if ipdata.get('owner') is None:
+                raise KeyError(ip + ' No Owner')
+        except KeyError as Error:
+            if verbose: print("Cache error: " + str(Error))
             whoisData[ip] = {}
-            whoisData[ip]['version'] = 1.0
+            whoisData[ip]['version'] = DATA_VERSION
             whoisData[ip]['good'] = True
             try:
                 ipdata = ipwhois.IPWhois(ip).lookup_rdap(depth=0)
+                # Try to get an owner name from asn_description
+                owner = ipdata.get('asn_description')
+                if owner is None:
+                    owner = ipdata.get('network').get('name')
+                # If that doesn't work, try again.
+                if owner is None:
+                    if verbose: print("Can't get owner for IP " + ip + ", logging")
+                    j.json_save(ipdata, "err/bad_ip/noowner_" + ip)
+                    owner = "UNKNOWN"
+                    whoisData[ip]['good'] = False
+                whoisData[ip]['owner'] = owner
                 print("WHOIS: Acquired new data for ip " + ip)
-                if verbose:
-                    pprint.pprint(ipdata)
-                whoisData[ip]['owner'] = ipdata['asn_description']
             except ipwhois.exceptions.IPDefinedError:
+                print("WHOIS: IP is a reserved internal address: " + ip)
                 whoisData[ip]['owner'] = "INTERNAL"
             except ipwhois.exceptions.HTTPLookupError:
                 whoisData[ip]['owner'] = "UNKNOWN"
                 whoisData[ip]['good'] = False
-                print("Error looking up IP address " + ip)
+                if verbose: print("WHOIS: Error looking up IP address " + ip)
+                j.json_save(traceback.format_exc(limit=2).split('\n'), "err/bad_ip/httplookup_" + ip)
+            i += 1
+            if i % 120 == 0:
+                saveWhois()
     saveWhois()
 
 

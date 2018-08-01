@@ -1,6 +1,7 @@
 import json
 import pickle
 from os import makedirs
+from os.path import dirname
 
 # Version 1.21
 
@@ -9,7 +10,8 @@ basepath_json = basepath
 basepath_pick = basepath
 
 
-def ensure_dirs(destpath):
+def ensure_dirs(basepath, filename):
+    destpath = dirname(basepath + filename)
     # Make necessary directories, if they don't exist.
     try:
         makedirs(destpath)
@@ -39,7 +41,7 @@ def json_load(filename):
 
 
 def json_save(object, filename):
-    ensure_dirs(basepath_json)
+    ensure_dirs(basepath_json, filename)
     j = json.dumps
     with open(basepath_json + filename + ".json", 'w') as file:
         j = json.dump(object, file, indent=4)
@@ -52,6 +54,6 @@ def pickle_load(filename):
 
 
 def pickle_save(object, filename):
-    ensure_dirs(basepath_pick)
+    ensure_dirs(basepath_pick, filename)
     filehandler = open(basepath_pick + filename + ".obj", 'wb')
     pickle.dump(object, filehandler)
