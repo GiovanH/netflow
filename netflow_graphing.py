@@ -5,6 +5,8 @@ import netflow_util as util
 import netflow_whois as whois
 from pprint import pformat
 
+import jfileutil as j
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -132,6 +134,7 @@ def doGraph(command, title, xlabel, x, ylabel, y, clear=True, saveImage=True, re
         plt.plot(x, y, color='blue', marker='o', linestyle='solid',
                  linewidth=2, markersize=3)  # Blue circles, solid lines
 
+    plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
     doGraphMeta(command, title, xlabel, ylabel, saveImage=saveImage, clear=clear, titleappend=titleappend)
 
 
@@ -157,8 +160,7 @@ def graph_ippercent(data, percent, flowdir, ip_type):
 
     # Compress bytes, if requested.
     if global_args.compress_size is not None:
-        for point in data:
-            point['bytes_in'] = point['bytes_in']/global_args.compress_size
+        data = util.compress_bytes(data, global_args.compress_size)
 
     # Create seperate X and Y arrays based on sort fields
     graphdatay = np.array([point['bytes_in'] for point in data])
@@ -224,8 +226,7 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
     data = sorted(data, key=lambda k: k['bytes_in'])[::-1]
 
     if global_args.compress_size is not None:
-        for point in data:
-            point['bytes_in'] = point['bytes_in']/global_args.compress_size
+        data = util.compress_bytes(data, global_args.compress_size)
 
     # Create seperate X and Y arrays based on sort fields
     graphdatay = np.array([point['bytes_in'] for point in data])
@@ -252,21 +253,15 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
     )
 
 
-def graph_icannstacktime(data, topn, flowdir, ip_type):
+def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True):
     command = "_".join(['icannstacktime', str(topn),
                         ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
-    graphtitle = 'Cumulative traffic, ' + \
+    graphtitle = 'Traffic, ' + \
         ('incoming' if flowdir == '1' else 'outgoing') + \
         ", top " + str(topn) + ' owners, by ' + ip_type
 
     # Filter out records that do not match the required flow direction.
     data = [i for i in data if i['flow_dir'] == flowdir]
-
-    # We can't group by IP yet, because that would discard time data.
-
-    # Get top records by bytes_in
-    # Sorts the list by bytes_in, gets the #n... #2, #1 entries, then reverses that list.
-    data = sorted(data, key=lambda k: k['bytes_in'])[-topn:][::-1]
 
     # Group by IP, retaining time info
     data = util.multi_combine_data(data, [ip_type, 'time'])
@@ -275,37 +270,40 @@ def graph_icannstacktime(data, topn, flowdir, ip_type):
     # Group by whois data, retaining time info
     data = util.multi_combine_data(data, ["whois_owner_" + ip_type, 'time'])
 
-    # Verbose data save
-    if global_args.verbose:
-        savelog(global_args.files, command, pformat(data), titleappend="_verbose_ip_data"
-                )
-
-    # Sort reduced data set
-    data = sorted(data, key=lambda k: k['bytes_in'])[::-1]
-
     if global_args.compress_size is not None:
-        for point in data:
-            point['bytes_in'] = point['bytes_in']/global_args.compress_size
+        util.compress_bytes(data, global_args.compress_size)
 
     # graphText(logtxt, plt)
     # savelog(global_args.files, command, logtxt)
 
     # Our X values will be TIME.
-    data = sorted(data, key=lambda k: k['time'])
-    x = [point['time'] for point in data]
+    # data = sorted(data, key=lambda k: k['time'])
+    x = list(range(0, 24))
     # print(pformat(x))
+
     # We will have a list of Y values.
     # Each y list represents one whois owner.
-    whoisowners = set([point["whois_owner_" + ip_type] for point in data])
+    whoisowners = list(set(
+        [
+            point["whois_owner_" + ip_type] for point in sorted(
+                # We care about the top topn OVERALL, not the top for any time, so we need to strip time data.
+                util.simple_combine_data(data, "whois_owner_" + ip_type), key=lambda k: k['bytes_in']
+            )[-topn:][::-1]
+        ]
+    ))
+
+    # Do final graph, incrementally building lines.
+    fig, ax = plt.subplots()
     ys = []
     for owner in whoisowners:
         y = []
         for time in x:
-            y.append(
-                sum(
-                    [point['bytes_in'] for point in data if point["whois_owner_" + ip_type] == owner and point["time"] == time]
-                )
-            )
+            s = 0.0
+            for point in data:
+                if point["whois_owner_" + ip_type] == owner and int(point["time"]) == time:
+                    s += point['bytes_in']
+            y.append(s)
+        plt.plot(x, y, label=owner)
         ys.append(y)
 
     if global_args.verbose:
@@ -314,17 +312,33 @@ def graph_icannstacktime(data, topn, flowdir, ip_type):
         ), titleappend="_verbose_points"
         )
 
-    y = np.vstack(ys)
-    # Do final graph.
-    fig, ax = plt.subplots()
-    ax.stackplot(x, y, labels=whoisowners)
-    ax.legend(loc=2)
-    doGraphMeta(
-        command,
-        graphtitle,
-        'Top contributors',
-        'Total ' + 'bytes_in'
-    )
+    if overlap:
+        plt.xticks(np.arange(min(x), max(x)+1, 1.0))
+        plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
+        ax.legend(loc=2)
+
+        doGraphMeta(
+            command,
+            graphtitle,
+            'Time (Hours, 0-23)',
+            'Total ' + util.localize_bytes(global_args.compress_size),
+            titleappend="_overlap"
+        )
+
+    if stack:
+        # Let's also do a stack graph.
+        fig, ax = plt.subplots()
+        ax.stackplot(x, np.vstack(ys), labels=whoisowners)
+        plt.xticks(np.arange(min(x), max(x)+1, 1.0))
+        plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
+        ax.legend(loc=2)
+        doGraphMeta(
+            command,
+            graphtitle + " (Stack)",
+            'Time (Hours, 0-23)',
+            'Total ' + util.localize_bytes(global_args.compress_size),
+            titleappend="_stack"
+        )
 
 
 # Graph cumulative traffic of the top [topn] of traffic contributors. Filtered by flowdir and ip_type.
@@ -359,7 +373,7 @@ def graph_top(data, topn, flowdir, ip_type):
         graphtitle,
         'Top contributors',
         list(range(1, len(graphdatax)+1)),
-        'Total ' + 'bytes_in',
+        'Total ' + util.localize_bytes(global_args.compress_size),
         np.cumsum(graphdatay),
         regress=global_args.regress
     )
@@ -379,8 +393,7 @@ def graph_hist(data, topn, flowdir, ip_type):
     data = sorted(data, key=lambda k: k['bytes_in'])[-topn:][::-1]
 
     if global_args.compress_size is not None:
-        for point in data:
-            point['bytes_in'] = point['bytes_in']/global_args.compress_size
+        data = util.compress_bytes(data, global_args.compress_size)
 
     # Create seperate X and Y arrays based on sort fields
     graphdatay = np.array([point['bytes_in'] for point in data])
@@ -399,7 +412,7 @@ def graph_hist(data, topn, flowdir, ip_type):
         graphtitle,
         'Top N contributor',
         list(range(1, len(graphdatax)+1)),
-        'Total ' + 'bytes_in',
+        'Total ' + util.localize_bytes(global_args.compress_size),
         graphdatay,
         regress=global_args.regress
     )

@@ -3,7 +3,7 @@ import pickle
 from os import makedirs
 from os.path import dirname
 
-# Version 1.21
+# Version 1.3
 
 basepath = "./jobj/"
 basepath_json = basepath
@@ -35,25 +35,25 @@ def json_to_pickle(filename):
     pickle_save(json_load(filename))
 
 
-def json_load(filename):
-    with open(basepath_json + filename + ".json", 'r') as file:
+def json_load(filename, basepath=basepath_json):
+    with open(basepath + filename + ".json", 'r') as file:
         return json.load(file)
 
 
-def json_save(object, filename):
-    ensure_dirs(basepath_json, filename)
+def json_save(object, filename, basepath=basepath_json):
+    ensure_dirs(basepath, filename)
     j = json.dumps
-    with open(basepath_json + filename + ".json", 'w') as file:
+    with open(basepath + filename + ".json", 'w') as file:
         j = json.dump(object, file, indent=4)
 
 
-def pickle_load(filename):
-    filehandler = open(basepath_pick + filename + ".obj", 'rb')
+def pickle_load(filename, basepath=basepath_pick):
+    filehandler = open(basepath + filename + ".obj", 'rb')
     object = pickle.load(filehandler)
     return object
 
 
-def pickle_save(object, filename):
-    ensure_dirs(basepath_pick, filename)
-    filehandler = open(basepath_pick + filename + ".obj", 'wb')
+def pickle_save(object, filename, basepath=basepath_pick):
+    ensure_dirs(basepath, filename)
+    filehandler = open(basepath + filename + ".obj", 'wb')
     pickle.dump(object, filehandler)

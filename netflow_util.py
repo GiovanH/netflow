@@ -10,6 +10,11 @@ def simple_combine_data(data, sortField):
 
 def multi_combine_data(data, sortFields):
     return combine_data(data, lambda a, b: all(a[sortField] == b[sortField] for sortField in sortFields), sortFields[0])
+    # def e(a, b):
+    #     all(a[f] == b[f] for f in sortFields)
+    # for sort in sortFields:
+    #     data = combine_data(data, e, sort)
+    # return data
 
 
 def combine_data(data, equals, sortField):
@@ -21,6 +26,7 @@ def combine_data(data, equals, sortField):
         return data
     try:
         data_sorted = sorted(data, key=lambda k: k[sortField])
+        # print([k[sortField] for k in data_sorted])
     except TypeError:
         print("SortField: " + sortField)
         print("Availible fields: " + str(data[0].keys()))
@@ -67,8 +73,17 @@ def combine_data(data, equals, sortField):
                     break
             combined[key] = value
         finaldata.append(combined)
-    print("Shrunk data from " + str(initial_length) + " to " + str(len(finaldata)))
+    print("Consolidated data from " + str(initial_length) + " to " + str(len(finaldata)))
     return finaldata
+
+
+def compress_bytes(data, compress_size):
+    for point in data:
+        point['bytes_in'] = point['bytes_in']/compress_size
+
+
+def localize_bytes(size):
+    return "bytes x" + str(size)
 
 
 def represent_poly(p, var_string='x'):

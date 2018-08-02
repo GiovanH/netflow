@@ -1,6 +1,6 @@
 #!/bin/bash
 
-anaconda3="C:/ProgramData/anaconda3/python.exe -u	"
+anaconda3="C:/ProgramData/anaconda3/python.exe -u "
 
 
 files="../20180110/*.csv"

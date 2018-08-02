@@ -106,8 +106,9 @@ for c in args.cmds:
     print('###    ' + c)
     print('####################################')
     sys.stdout.flush()
+    if options.get(c) is None:
+        print("No such command " + c)
+        print("Valid commands are:")
+        print(", ".join(key for key in options.keys()))
+        continue
     options[c]()
-# except KeyError:
-#     print("No such command " + c)
-#     print("Valid commands are:")
-#     print(", ".join(key for key in options.keys()))

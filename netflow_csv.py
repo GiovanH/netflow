@@ -28,15 +28,14 @@ def opencsv(globstr, cap):
 
                 # Let's only read the fields we're interested in, to save time.
                 sheet.append({field: row[field] for field in ['bytes_in', 'dest_ip', 'flow_dir', 'src_ip', 'linenum', 'time', 'filename']})
-                cap -= 1
-                if (cap == 0):
+                if (i == cap):
                     break
                 if (i % 50000 == 0):
                     print('#', end='')
                     sys.stdout.flush()
         print(']')
         sys.stdout.flush()
-        # sheet = util.multi_combine_data(sheet, ['dest_ip', 'flow_dir', 'src_ip', 'time', 'filename'])
+        sheet = util.multi_combine_data(sheet, ['dest_ip', 'flow_dir', 'src_ip', 'time', 'filename'])
         data += sheet
     # print(data)
     return data

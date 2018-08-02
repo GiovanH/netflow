@@ -26,7 +26,7 @@ def saveWhois():
     j.save(whoisData, cachefilename)
 
 
-def populateDatabase(addresses, verbose=False, force=False):
+def populateDatabase(addresses, verbose=True, force=False):
     global whoisData  # Necessary to modifiy whoisData
     if whoisData == {}:
         loadWhois()
@@ -37,8 +37,8 @@ def populateDatabase(addresses, verbose=False, force=False):
             ipdata = whoisData[ip]
             if not (force is False):
                 raise KeyError('Force')
-            if ipdata.get('good') is not True:
-                raise KeyError(ip + ' Not Good')
+            # if ipdata.get('good') is not True:
+            #     raise KeyError(ip + ' Not Good')
             if ipdata.get('version') != DATA_VERSION:
                 raise KeyError(ip + ' Outdated')
             if ipdata.get('owner') is None:
