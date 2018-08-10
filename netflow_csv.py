@@ -37,7 +37,7 @@ def opencsv(globstr, cap):
                     if (i % 50000 == 0):
                         print('#', end='')
                         sys.stdout.flush()
-                except:
+                except ValueError:
                     print("Row error on file " + filename + " row " + str(i))
                     print(row)
                     print("Skipping file.")
