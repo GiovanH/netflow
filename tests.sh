@@ -2,7 +2,7 @@
 unamestr=$(uname)
 if [[ "$unamestr" == 'Linux' ]]; then
 	anaconda3="/home/stg160130/anaconda3/bin/python3 -u	"
-	files="/data/netflow/d"
+	files="/data/netflow/"
 	export MPLBACKEND="agg"
 elif [[ "$unamestr" == 'CYGWIN_NT-10.0' ]]; then
 	anaconda3="/cygdrive/c/ProgramData/anaconda3/python.exe -u "
