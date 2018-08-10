@@ -1,13 +1,13 @@
 #!/bin/bash
 unamestr=`uname`
 if [[ "$unamestr" == 'Linux' ]]; then
-	anaconda3="~/anaconda3/bin/python3 -u	"
+	anaconda3="/home/stg160130/anaconda3/bin/python3 -u	"
 elif [[ "$unamestr" == 'CYGWIN_NT-10.0' ]]; then
 	anaconda3="/cygdrive/c/ProgramData/anaconda3/python.exe -u "
 fi
 # anaconda3="$anaconda3 -m cProfile -s cumtime"
 
-files="../20180110/*.csv"
+files="../day=20180804/*.csv"
 logfile="./logs/tests.log"
 polynomial=4
 moreargs="--scaletozero"
