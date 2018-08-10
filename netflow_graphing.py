@@ -5,8 +5,6 @@ import netflow_util as util
 import netflow_whois as whois
 from pprint import pformat
 
-import jfileutil as j
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -30,6 +28,8 @@ def savefig(glob, type, plt, titleappend=""):
     except FileExistsError:
         pass
     # Save figure
+    fig = plt.gcf()
+    fig.set_size_inches(10, 6)
     plt.savefig(destpath + 'graph' + titleappend + '.png', bbox_inches="tight")
 
 
@@ -143,7 +143,7 @@ def graph_ippercent(data, percent, flowdir, ip_type):
     # Write a unique name for this command.
     command = "_".join(
         ['ippercent', str(percent), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
-
+    print(command)
     # Write graph title based on arguments.
     graphtitle = 'Cumulative traffic, ' + \
         ('incoming' if flowdir == '1' else 'outgoing') + \
@@ -160,7 +160,7 @@ def graph_ippercent(data, percent, flowdir, ip_type):
 
     # Compress bytes, if requested.
     if global_args.compress_size is not None:
-        data = util.compress_bytes(data, global_args.compress_size)
+        util.compress_bytes(data, global_args.compress_size)
 
     # Create seperate X and Y arrays based on sort fields
     graphdatay = np.array([point['bytes_in'] for point in data])
@@ -200,6 +200,7 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
     # Write a unique name for this command.
     command = "_".join(['icannpercent', str(percent),
                         ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
+    print(command)
     # Write graph title based on function arguments
     graphtitle = 'Cumulative traffic, ' + \
         ('incoming' if flowdir == '1' else 'outgoing') + \
@@ -226,7 +227,7 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
     data = sorted(data, key=lambda k: k['bytes_in'])[::-1]
 
     if global_args.compress_size is not None:
-        data = util.compress_bytes(data, global_args.compress_size)
+        util.compress_bytes(data, global_args.compress_size)
 
     # Create seperate X and Y arrays based on sort fields
     graphdatay = np.array([point['bytes_in'] for point in data])
@@ -256,6 +257,7 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
 def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True):
     command = "_".join(['icannstacktime', str(topn),
                         ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
+    print(command)
     graphtitle = 'Traffic, ' + \
         ('incoming' if flowdir == '1' else 'outgoing') + \
         ", top " + str(topn) + ' owners, by ' + ip_type
@@ -295,16 +297,30 @@ def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True)
     # Do final graph, incrementally building lines.
     fig, ax = plt.subplots()
     ys = []
+    totalbytes = 0
     for owner in whoisowners:
         y = []
         for time in x:
             s = 0.0
             for point in data:
+                totalbytes += point['bytes_in']
                 if point["whois_owner_" + ip_type] == owner and int(point["time"]) == time:
                     s += point['bytes_in']
             y.append(s)
-        plt.plot(x, y, label=owner)
+        if overlap:
+            plt.plot(x, y, label=owner)
         ys.append(y)
+
+    # Get line for the total
+    #if overlap:
+    total_y = []
+    for time in x:
+        s = 0.0
+        for point in data:
+            if int(point["time"]) == time:
+                s += point['bytes_in']
+        total_y.append(s)
+    plt.plot(x, total_y, label="Total")
 
     if global_args.verbose:
         savelog(global_args.files, command, pformat(
@@ -315,7 +331,7 @@ def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True)
     if overlap:
         plt.xticks(np.arange(min(x), max(x)+1, 1.0))
         plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
-        ax.legend(loc=2)
+        ax.legend(loc='best')
 
         doGraphMeta(
             command,
@@ -331,7 +347,10 @@ def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True)
         ax.stackplot(x, np.vstack(ys), labels=whoisowners)
         plt.xticks(np.arange(min(x), max(x)+1, 1.0))
         plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
-        ax.legend(loc=2)
+        ax.legend(loc='best')
+
+        # Add in the total line
+        plt.plot(x, total_y, label="Total")
         doGraphMeta(
             command,
             graphtitle + " (Stack)",
@@ -344,7 +363,7 @@ def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True)
 # Graph cumulative traffic of the top [topn] of traffic contributors. Filtered by flowdir and ip_type.
 def graph_top(data, topn, flowdir, ip_type):
     command = "_".join(['top', str(topn), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
-
+    print(command)
     # Filter records by flow direction
     data = [i for i in data if i['flow_dir'] == flowdir]
 
@@ -381,7 +400,7 @@ def graph_top(data, topn, flowdir, ip_type):
 
 def graph_hist(data, topn, flowdir, ip_type):
     command = "_".join(['hist', str(topn), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
-
+    print(command)
     # Filter records by flow direction
     data = [i for i in data if i['flow_dir'] == flowdir]
 
@@ -393,7 +412,7 @@ def graph_hist(data, topn, flowdir, ip_type):
     data = sorted(data, key=lambda k: k['bytes_in'])[-topn:][::-1]
 
     if global_args.compress_size is not None:
-        data = util.compress_bytes(data, global_args.compress_size)
+        util.compress_bytes(data, global_args.compress_size)
 
     # Create seperate X and Y arrays based on sort fields
     graphdatay = np.array([point['bytes_in'] for point in data])
