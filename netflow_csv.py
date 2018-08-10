@@ -39,9 +39,9 @@ def opencsv(globstr, cap):
                         sys.stdout.flush()
                 except ValueError:
                     print("Row error on file " + filename + " row " + str(i))
-                    print(row)
-                    print("Skipping file.")
-                    break
+                    # print(row)
+                    # print("Skipping row.")
+                    # break
         print(']')
         sys.stdout.flush()
         sheet = util.multi_combine_data(sheet, ['dest_ip', 'flow_dir', 'src_ip', 'time', 'filename'])
