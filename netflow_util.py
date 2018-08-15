@@ -1,8 +1,6 @@
 #!/bin/python3
 # Seth Giovanetti
 
-import os
-
 
 def simple_combine_data(data, sortField):
     return combine_data(data, lambda a, b: a[sortField] == b[sortField], sortField)

@@ -30,6 +30,9 @@ def opencsv(globstr, cap):
                     row['bytes_in'] = int(row['bytes_in'])
                     row['time'] = row['_time'][11:13]
 
+                    if row['flow_dir'] == "":
+                        raise ValueError("No flow direction")
+
                     # Let's only read the fields we're interested in, to save time.
                     sheet.append({field: row[field] for field in ['bytes_in', 'dest_ip', 'flow_dir', 'src_ip', 'linenum', 'time', 'filename']})
                     if (i == cap):
@@ -38,7 +41,7 @@ def opencsv(globstr, cap):
                         print('#', end='')
                         sys.stdout.flush()
                 except ValueError:
-                    # print("Row error on file " + filename + " row " + str(i))
+                    print("Row error on file " + filename + " row " + str(i))
                     # print(row)
                     # print("Skipping row.")
                     # break

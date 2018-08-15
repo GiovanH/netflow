@@ -255,6 +255,7 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
 
 
 def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True):
+    print(data)
     command = "_".join(['icannstacktime', str(topn),
                         ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
     print(command)

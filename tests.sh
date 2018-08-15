@@ -9,7 +9,7 @@ elif [[ "$unamestr" == 'CYGWIN_NT-10.0' ]]; then
 	files="../data/netflow/"
 fi
 # anaconda3="$anaconda3 -m cProfile -s cumtime"
-files="${files}day=20180507/*.csv"
+files="${files}day=20180507/netflow-00*.csv"
 
 logfile="./logs/tests.log"
 polynomial=4
