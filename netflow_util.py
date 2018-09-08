@@ -82,9 +82,22 @@ def compress_bytes(data, compress_size):
 
 
 def flowdir(point):
-    # Incoming: 1
-    # Outgoing: 0
-    return 1
+    IN = 1
+    OUT = 0
+    ids_internal = ["INTERNAL", 'UTDALLAS - University of Texas at Dallas, US']
+    try:
+        src = point['whois_owner_src_ip']
+        dest = point['whois_owner_dest_ip']
+    except KeyError as e:
+        raise Exception("Data point " + str(point) + " has no data " + str(e))
+
+    if (src in ids_internal) and (dest not in ids_internal):
+        # Internal to external
+        return OUT
+    if (src not in ids_internal) and (dest in ids_internal):
+        # External to internal
+        return IN
+    raise Exception("Unknown flow direction for point " + str(point) + " with source " + str(src) + " and destination " + str(dest))
 
 
 def localize_bytes(size):

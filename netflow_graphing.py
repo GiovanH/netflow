@@ -154,6 +154,8 @@ def graph_ippercent(data, percent, flowdir, ip_type):
         ", top " + str(percent) + '%, by ' + ip_type
 
     # Filter out records that do not match the required flow direction.
+    # This now requires knowing WHOIS information
+    whois.appendOwnersToData(data)
     data = [i for i in data if util.flowdir(i) == flowdir]
 
     # Group records by ip type
@@ -211,13 +213,15 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
         ('incoming' if flowdir == '1' else 'outgoing') + \
         ", top " + str(percent) + '% of owners, by ' + ip_type
 
+    # Group records by IP address only.
+    data = util.simple_combine_data(data, ip_type)
+
+    # Append whois data to the data set
+    whois.appendOwnersToData(data)
+
     # Filter out records that do not match the required flow direction.
     data = [i for i in data if util.flowdir(i) == flowdir]
 
-    # Group records by IP address only.
-    data = util.simple_combine_data(data, ip_type)
-    # Append whois data to the full data set
-    whois.appendOwnerData(data, ip_type)
     # Group records by whois owner.
     data = util.simple_combine_data(data, "whois_owner_" + ip_type)
 
@@ -270,12 +274,12 @@ def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True)
         ", top " + str(topn) + ' owners, by ' + ip_type
 
     # Filter out records that do not match the required flow direction.
+    # This now requires whois data.
+    whois.appendOwnersToData(data)
     data = [i for i in data if util.flowdir(i) == flowdir]
 
     # Group by IP, retaining time info
     data = util.multi_combine_data(data, [ip_type, 'time'])
-    # Append whois data to this reduced data set
-    whois.appendOwnerData(data, ip_type)
     # Group by whois data, retaining time info
     data = util.multi_combine_data(data, ["whois_owner_" + ip_type, 'time'])
 
@@ -372,7 +376,10 @@ def graph_top(data, topn, flowdir, ip_type):
     command = "_".join(
         ['top', str(topn), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
     print(command)
+
     # Filter records by flow direction
+    # This now requires whois information
+    whois.appendOwnersToData(data)
     data = [i for i in data if util.flowdir(i) == flowdir]
 
     # Group records by src_ip
