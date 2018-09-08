@@ -1,8 +1,6 @@
 #!/bin/python3
 # Seth Giovanetti
 
-import os
-
 
 def simple_combine_data(data, sortField):
     return combine_data(data, lambda a, b: a[sortField] == b[sortField], sortField)
@@ -73,13 +71,14 @@ def combine_data(data, equals, sortField):
                     break
             combined[key] = value
         finaldata.append(combined)
-    print("Consolidated data from " + str(initial_length) + " to " + str(len(finaldata)))
+    print("Consolidated data from " +
+          str(initial_length) + " to " + str(len(finaldata)))
     return finaldata
 
 
 def compress_bytes(data, compress_size):
     for point in data:
-        point['bytes_in'] = point['bytes_in']/compress_size
+        point['bytes_in'] = point['bytes_in'] / compress_size
 
 
 def localize_bytes(size):
@@ -131,7 +130,7 @@ def top_percent(predata, percent, field):
 
     # Calculate top % of data, and use that as the data we graph
     # Until the amount of data we have exceeds %[percent], move a data point into our final list.
-    while len(predata) > 0 and included < totalvalue*(percent/100):
+    while len(predata) > 0 and included < totalvalue * (percent / 100):
         newrecord = predata.pop()
         included += newrecord[field]
         data.append(newrecord)

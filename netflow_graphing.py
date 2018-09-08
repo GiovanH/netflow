@@ -56,9 +56,11 @@ def graphText(textstr, plt):
     # Pull out figure and axis variables.
     fig, ax = plt.subplots()
     # these are matplotlib.patch.Patch properties
-    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    # props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    # Props are not currently used
     # place a text box in upper left in axes coords
-    ax.text(-0.1, -0.1, textstr.replace("\t", ": "), transform=ax.transAxes, va='top')
+    ax.text(-0.1, -0.1, textstr.replace("\t", ": "),
+            transform=ax.transAxes, va='top')
 
 
 # Does everything but plot the graph. Useful if you don't want to use plt.plot.
@@ -109,7 +111,8 @@ def doGraph(command, title, xlabel, x, ylabel, y, clear=True, saveImage=True, re
         titleappend += "_regression"
 
         print("Data regression with degree " + str(regress))
-        fit = np.polyfit(x, y, regress)  # Get the polynomial fit, e.g. the polynomial coefficients.
+        # Get the polynomial fit, e.g. the polynomial coefficients.
+        fit = np.polyfit(x, y, regress)
         # Create a formatted string to represent the function. This is only for display.
         polynomstr = util.represent_poly([round(o, 3) for o in fit])
 
@@ -135,7 +138,8 @@ def doGraph(command, title, xlabel, x, ylabel, y, clear=True, saveImage=True, re
                  linewidth=2, markersize=3)  # Blue circles, solid lines
 
     plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
-    doGraphMeta(command, title, xlabel, ylabel, saveImage=saveImage, clear=clear, titleappend=titleappend)
+    doGraphMeta(command, title, xlabel, ylabel, saveImage=saveImage,
+                clear=clear, titleappend=titleappend)
 
 
 # Graph cumulative traffic of the top %[percent] of traffic contributors. Filtered by flowdir and ip_type.
@@ -178,7 +182,8 @@ def graph_ippercent(data, percent, flowdir, ip_type):
 
     else:
         logtxt = 'Top ' + str(percent) + '% of contributors: \n' + pformat(
-            [graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0, len(graphdatax))]
+            [graphdatax[i] + "\t" + str(graphdatay[i])
+             for i in range(0, len(graphdatax))]
         )
 
     graphText(logtxt, plt)
@@ -188,7 +193,7 @@ def graph_ippercent(data, percent, flowdir, ip_type):
         command,
         graphtitle,
         'Top contributors',
-        list(range(1, len(graphdatax)+1)),
+        list(range(1, len(graphdatax) + 1)),
         'Total ' + 'bytes_in',
         np.cumsum(graphdatay),
         regress=global_args.regress
@@ -221,7 +226,8 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
 
     # Verbose data save
     if global_args.verbose:
-        savelog(global_args.files, command, pformat(data), titleappend="_verbose_ip_data")
+        savelog(global_args.files, command, pformat(
+            data), titleappend="_verbose_ip_data")
 
     # Sort reduced data set
     data = sorted(data, key=lambda k: k['bytes_in'])[::-1]
@@ -235,7 +241,8 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
 
     # Log which whois entities account for which rank.
     logtxt = 'Top ' + str(percent) + '% of contributors: \n' + '\n'.join(
-        [graphdatax[i] + "\t" + str(graphdatay[i]) + "\t" for i in range(0, len(graphdatax))]
+        [graphdatax[i] + "\t" + str(graphdatay[i]) +
+         "\t" for i in range(0, len(graphdatax))]
     )
 
     # Add text to graph and log file
@@ -247,7 +254,7 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
         command,
         graphtitle,
         'Top contributors',
-        list(range(1, len(graphdatax)+1)),
+        list(range(1, len(graphdatax) + 1)),
         'Total ' + 'bytes_in',
         np.cumsum(graphdatay),
         regress=global_args.regress
@@ -312,7 +319,7 @@ def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True)
         ys.append(y)
 
     # Get line for the total
-    #if overlap:
+    # if overlap:
     total_y = []
     for time in x:
         s = 0.0
@@ -329,7 +336,7 @@ def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True)
         )
 
     if overlap:
-        plt.xticks(np.arange(min(x), max(x)+1, 1.0))
+        plt.xticks(np.arange(min(x), max(x) + 1, 1.0))
         plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
         ax.legend(loc='best')
 
@@ -345,7 +352,7 @@ def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True)
         # Let's also do a stack graph.
         fig, ax = plt.subplots()
         ax.stackplot(x, np.vstack(ys), labels=whoisowners)
-        plt.xticks(np.arange(min(x), max(x)+1, 1.0))
+        plt.xticks(np.arange(min(x), max(x) + 1, 1.0))
         plt.grid(True, 'major', 'y', ls='--', lw=.5, c='k', alpha=.3)
         ax.legend(loc='best')
 
@@ -362,7 +369,8 @@ def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True)
 
 # Graph cumulative traffic of the top [topn] of traffic contributors. Filtered by flowdir and ip_type.
 def graph_top(data, topn, flowdir, ip_type):
-    command = "_".join(['top', str(topn), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
+    command = "_".join(
+        ['top', str(topn), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
     print(command)
     # Filter records by flow direction
     data = [i for i in data if i['flow_dir'] == flowdir]
@@ -380,10 +388,12 @@ def graph_top(data, topn, flowdir, ip_type):
     # print(graphdatax,graphdatay)
 
     graphtitle = 'Cumulative traffic, ' + \
-        ('incoming' if flowdir == '1' else 'outgoing') + ", top " + str(topn) + ' by ' + ip_type
+        ('incoming' if flowdir == '1' else 'outgoing') + \
+        ", top " + str(topn) + ' by ' + ip_type
 
     logtxt = 'Top ' + str(topn) + ' contributors: \n' + \
-        '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0, len(graphdatax))])
+        '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i])
+                   for i in range(0, len(graphdatax))])
 
     graphText(logtxt, plt)
     savelog(global_args.files, command, logtxt)
@@ -391,7 +401,7 @@ def graph_top(data, topn, flowdir, ip_type):
         command,
         graphtitle,
         'Top contributors',
-        list(range(1, len(graphdatax)+1)),
+        list(range(1, len(graphdatax) + 1)),
         'Total ' + util.localize_bytes(global_args.compress_size),
         np.cumsum(graphdatay),
         regress=global_args.regress
@@ -399,7 +409,8 @@ def graph_top(data, topn, flowdir, ip_type):
 
 
 def graph_hist(data, topn, flowdir, ip_type):
-    command = "_".join(['hist', str(topn), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
+    command = "_".join(
+        ['hist', str(topn), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
     print(command)
     # Filter records by flow direction
     data = [i for i in data if i['flow_dir'] == flowdir]
@@ -419,10 +430,12 @@ def graph_hist(data, topn, flowdir, ip_type):
     graphdatax = np.array([point[ip_type] for point in data])
     # print(graphdatax,graphdatay)
 
-    graphtitle = 'Traffic, ' + ('incoming' if flowdir == '1' else 'outgoing') + ', by ' + ip_type
+    graphtitle = 'Traffic, ' + \
+        ('incoming' if flowdir == '1' else 'outgoing') + ', by ' + ip_type
 
     logtxt = 'Top ' + str(topn) + ' contributors: \n' + \
-        '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i]) for i in range(0, len(graphdatax))])
+        '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i])
+                   for i in range(0, len(graphdatax))])
 
     graphText(logtxt, plt)
     savelog(global_args.files, command, logtxt)
@@ -430,7 +443,7 @@ def graph_hist(data, topn, flowdir, ip_type):
         command,
         graphtitle,
         'Top N contributor',
-        list(range(1, len(graphdatax)+1)),
+        list(range(1, len(graphdatax) + 1)),
         'Total ' + util.localize_bytes(global_args.compress_size),
         graphdatay,
         regress=global_args.regress

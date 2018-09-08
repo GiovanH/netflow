@@ -84,7 +84,7 @@ def init(argvs):
     ngraph.global_args = args
 
     # Hack: Fix cygwin paths
-    args.files = args.files.replace("/", "\\")
+    # args.files = args.files.replace("/", "\\")
     # Read data in from CSV files.
     # Data is based on a file glob to CSV files that are expected to be netflow exports.
 
