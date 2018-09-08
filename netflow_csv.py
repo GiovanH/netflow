@@ -30,11 +30,8 @@ def opencsv(globstr, cap):
                     row['bytes_in'] = int(row['bytes_in'])
                     row['time'] = row['_time'][11:13]
 
-                    if row['flow_dir'] == "":
-                        raise ValueError("No flow direction")
-
                     # Let's only read the fields we're interested in, to save time.
-                    sheet.append({field: row[field] for field in ['bytes_in', 'dest_ip', 'flow_dir', 'src_ip', 'linenum', 'time', 'filename']})
+                    sheet.append({field: row[field] for field in ['bytes_in', 'dest_ip', 'src_ip', 'linenum', 'time', 'filename']})
                     if (i == cap):
                         break
                     if (i % 50000 == 0):
@@ -48,7 +45,7 @@ def opencsv(globstr, cap):
                     pass
         print(']')
         sys.stdout.flush()
-        sheet = util.multi_combine_data(sheet, ['dest_ip', 'flow_dir', 'src_ip', 'time', 'filename'])
+        sheet = util.multi_combine_data(sheet, ['dest_ip', 'src_ip', 'time', 'filename'])
         data += sheet
     # print(data)
     return data

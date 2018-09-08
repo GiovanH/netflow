@@ -81,6 +81,12 @@ def compress_bytes(data, compress_size):
         point['bytes_in'] = point['bytes_in'] / compress_size
 
 
+def flowdir(point):
+    # Incoming: 1
+    # Outgoing: 0
+    return 1
+
+
 def localize_bytes(size):
     return "bytes x" + str(size)
 

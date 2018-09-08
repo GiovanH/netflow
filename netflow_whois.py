@@ -2,7 +2,6 @@
 
 import jfileutil as j
 import ipwhois
-import pprint
 import traceback
 
 whoisData = {}

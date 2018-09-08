@@ -154,7 +154,7 @@ def graph_ippercent(data, percent, flowdir, ip_type):
         ", top " + str(percent) + '%, by ' + ip_type
 
     # Filter out records that do not match the required flow direction.
-    data = [i for i in data if i['flow_dir'] == flowdir]
+    data = [i for i in data if util.flowdir(i) == flowdir]
 
     # Group records by ip type
     data = util.simple_combine_data(data, ip_type)
@@ -212,7 +212,7 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
         ", top " + str(percent) + '% of owners, by ' + ip_type
 
     # Filter out records that do not match the required flow direction.
-    data = [i for i in data if i['flow_dir'] == flowdir]
+    data = [i for i in data if util.flowdir(i) == flowdir]
 
     # Group records by IP address only.
     data = util.simple_combine_data(data, ip_type)
@@ -270,7 +270,7 @@ def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True)
         ", top " + str(topn) + ' owners, by ' + ip_type
 
     # Filter out records that do not match the required flow direction.
-    data = [i for i in data if i['flow_dir'] == flowdir]
+    data = [i for i in data if util.flowdir(i) == flowdir]
 
     # Group by IP, retaining time info
     data = util.multi_combine_data(data, [ip_type, 'time'])
@@ -373,7 +373,7 @@ def graph_top(data, topn, flowdir, ip_type):
         ['top', str(topn), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
     print(command)
     # Filter records by flow direction
-    data = [i for i in data if i['flow_dir'] == flowdir]
+    data = [i for i in data if util.flowdir(i) == flowdir]
 
     # Group records by src_ip
     data = util.simple_combine_data(data, ip_type)
@@ -413,7 +413,7 @@ def graph_hist(data, topn, flowdir, ip_type):
         ['hist', str(topn), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
     print(command)
     # Filter records by flow direction
-    data = [i for i in data if i['flow_dir'] == flowdir]
+    data = [i for i in data if util.flowdir(i) == flowdir]
 
     # Group records by src_ip
     data = util.simple_combine_data(data, ip_type)
