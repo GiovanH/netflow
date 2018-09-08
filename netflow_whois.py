@@ -20,8 +20,8 @@ def loadWhois():
         # pass # We will build whoisdata ourselves and save it anyway.
 
 
-def saveWhois():
-    print("WHOIS: Saving whois cache")
+def saveWhois(whoisData):
+    print("Saving whois cache with " + str(len(whoisData)) + " entries")
     j.save(whoisData, cachefilename)
 
 
@@ -77,8 +77,8 @@ def populateDatabase(addresses, verbose=True, force=False):
                 j.json_save(traceback.format_exc(limit=2).split('\n'), "err/bad_ip/httplookup_" + ip)
             i += 1
             if i % 120 == 0:
-                saveWhois()
-    saveWhois()
+                saveWhois(whoisData)
+    saveWhois(whoisData)
 
 
 def getOwnerPairing(addresses):
