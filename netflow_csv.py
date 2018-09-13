@@ -5,7 +5,7 @@ import csv
 import glob
 import netflow_util as util
 import sys
-
+from datetime import datetime
 
 def opencsv(globstr, cap):
     data = []
@@ -22,13 +22,14 @@ def opencsv(globstr, cap):
             reader = csv.DictReader(csvfile)
             sheet = []
             i = 1
+            bad_rows = 0
             for row in reader:
                 try:
                     i += 1
                     row['filename'] = filename
                     row['linenum'] = str(i)
                     row['bytes_in'] = int(row['bytes_in'])
-                    row['time'] = row['_time'][11:13]
+                    row['time'] = datetime.fromtimestamp(int(row['_time'])).hour
 
                     # Let's only read the fields we're interested in, to save time.
                     sheet.append({field: row[field] for field in ['bytes_in', 'dest_ip', 'src_ip', 'linenum', 'time', 'filename']})
@@ -38,12 +39,15 @@ def opencsv(globstr, cap):
                         print('#', end='')
                         sys.stdout.flush()
                 except ValueError as e:
-                    #print("Row error on file " + filename + " row " + str(i))
-                    #print(row)
-                    #print("Skipping row")
+                    # print(e)
+                    # print("Row error on file " + filename + " row " + str(i))
+                    # print(row)
+                    # print("Skipping row")
                     #break
+                    bad_rows += 1
                     pass
         print(']')
+        print(bad_rows, "bad rows in file.")
         sys.stdout.flush()
         sheet = util.multi_combine_data(sheet, ['dest_ip', 'src_ip', 'time', 'filename'])
         data += sheet

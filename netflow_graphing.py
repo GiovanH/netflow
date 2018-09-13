@@ -146,16 +146,14 @@ def doGraph(command, title, xlabel, x, ylabel, y, clear=True, saveImage=True, re
 def graph_ippercent(data, percent, flowdir, ip_type):
     # Write a unique name for this command.
     command = "_".join(
-        ['ippercent', str(percent), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
+        ['ippercent', str(percent), ('incoming' if flowdir == 1 else 'outgoing'), ip_type])
     print(command)
     # Write graph title based on arguments.
     graphtitle = 'Cumulative traffic, ' + \
-        ('incoming' if flowdir == '1' else 'outgoing') + \
+        ('incoming' if flowdir == 1 else 'outgoing') + \
         ", top " + str(percent) + '%, by ' + ip_type
 
     # Filter out records that do not match the required flow direction.
-    # This now requires knowing WHOIS information
-    whois.appendOwnersToData(data)
     data = [i for i in data if util.flowdir(i) == flowdir]
 
     # Group records by ip type
@@ -206,21 +204,21 @@ def graph_ippercent(data, percent, flowdir, ip_type):
 def graph_icannpercent(data, percent, flowdir, ip_type):
     # Write a unique name for this command.
     command = "_".join(['icannpercent', str(percent),
-                        ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
+                        ('incoming' if flowdir == 1 else 'outgoing'), ip_type])
     print(command)
     # Write graph title based on function arguments
     graphtitle = 'Cumulative traffic, ' + \
-        ('incoming' if flowdir == '1' else 'outgoing') + \
+        ('incoming' if flowdir == 1 else 'outgoing') + \
         ", top " + str(percent) + '% of owners, by ' + ip_type
+
+    # Filter out records that do not match the required flow direction.
+    data = [i for i in data if util.flowdir(i, check=flowdir) == flowdir]
 
     # Group records by IP address only.
     data = util.simple_combine_data(data, ip_type)
 
     # Append whois data to the data set
     whois.appendOwnersToData(data)
-
-    # Filter out records that do not match the required flow direction.
-    data = [i for i in data if util.flowdir(i) == flowdir]
 
     # Group records by whois owner.
     data = util.simple_combine_data(data, "whois_owner_" + ip_type)
@@ -267,19 +265,19 @@ def graph_icannpercent(data, percent, flowdir, ip_type):
 
 def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True):
     command = "_".join(['icannstacktime', str(topn),
-                        ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
+                        ('incoming' if flowdir == 1 else 'outgoing'), ip_type])
     print(command)
     graphtitle = 'Traffic, ' + \
-        ('incoming' if flowdir == '1' else 'outgoing') + \
+        ('incoming' if flowdir == 1 else 'outgoing') + \
         ", top " + str(topn) + ' owners, by ' + ip_type
 
     # Filter out records that do not match the required flow direction.
-    # This now requires whois data.
-    whois.appendOwnersToData(data)
     data = [i for i in data if util.flowdir(i) == flowdir]
 
     # Group by IP, retaining time info
     data = util.multi_combine_data(data, [ip_type, 'time'])
+    # Append whois data to this reduced data set
+    whois.appendOwnersToData(data)
     # Group by whois data, retaining time info
     data = util.multi_combine_data(data, ["whois_owner_" + ip_type, 'time'])
 
@@ -374,7 +372,7 @@ def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True)
 # Graph cumulative traffic of the top [topn] of traffic contributors. Filtered by flowdir and ip_type.
 def graph_top(data, topn, flowdir, ip_type):
     command = "_".join(
-        ['top', str(topn), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
+        ['top', str(topn), ('incoming' if flowdir == 1 else 'outgoing'), ip_type])
     print(command)
 
     # Filter records by flow direction
@@ -395,7 +393,7 @@ def graph_top(data, topn, flowdir, ip_type):
     # print(graphdatax,graphdatay)
 
     graphtitle = 'Cumulative traffic, ' + \
-        ('incoming' if flowdir == '1' else 'outgoing') + \
+        ('incoming' if flowdir == 1 else 'outgoing') + \
         ", top " + str(topn) + ' by ' + ip_type
 
     logtxt = 'Top ' + str(topn) + ' contributors: \n' + \
@@ -417,7 +415,7 @@ def graph_top(data, topn, flowdir, ip_type):
 
 def graph_hist(data, topn, flowdir, ip_type):
     command = "_".join(
-        ['hist', str(topn), ('incoming' if flowdir == '1' else 'outgoing'), ip_type])
+        ['hist', str(topn), ('incoming' if flowdir == 1 else 'outgoing'), ip_type])
     print(command)
     # Filter records by flow direction
     data = [i for i in data if util.flowdir(i) == flowdir]
@@ -438,7 +436,7 @@ def graph_hist(data, topn, flowdir, ip_type):
     # print(graphdatax,graphdatay)
 
     graphtitle = 'Traffic, ' + \
-        ('incoming' if flowdir == '1' else 'outgoing') + ', by ' + ip_type
+        ('incoming' if flowdir == 1 else 'outgoing') + ', by ' + ip_type
 
     logtxt = 'Top ' + str(topn) + ' contributors: \n' + \
         '\n'.join([graphdatax[i] + "\t" + str(graphdatay[i])

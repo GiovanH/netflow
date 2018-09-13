@@ -20,7 +20,7 @@ def combine_data(data, equals, sortField):
     # Combines records in data based on the equals function.
     # Only sequential entries after sorting by sortfield will be combined.
     if initial_length is 0:
-        print("Warning! Data is empty!")
+        print("combine_data() Warning! Data is empty!")
         return data
     try:
         data_sorted = sorted(data, key=lambda k: k[sortField])
@@ -81,28 +81,50 @@ def compress_bytes(data, compress_size):
         point['bytes_in'] = point['bytes_in'] / compress_size
 
 
-def flowdir(point):
+def flowdir(point, check=0):
     IN = 1
     OUT = 0
     IN_TO_IN = 2
-    ids_internal = ["INTERNAL", 'UTDALLAS - University of Texas at Dallas, US']
-    try:
-        src = point['whois_owner_src_ip']
-        dest = point['whois_owner_dest_ip']
-    except KeyError as e:
-        raise Exception("Data point " + str(point) + " has no data " + str(e))
+    OUT_TO_OUT = 3
 
-    if (src in ids_internal) and (dest not in ids_internal):
-        # Internal to external
-        return OUT
-    if (src not in ids_internal) and (dest in ids_internal):
-        # External to internal
-        return IN
-    err = "Unknown flow direction for point " + str(point) + " with source " + str(src) + " and destination " + str(dest)
-    print(err)
-    return IN_TO_IN
-    #raise Exception(err)
+    src = point['src_ip']
+    dest = point['dest_ip']
 
+    def isInternal(ip):
+        return ip.find("10.") == 0
+
+    if isInternal(src):
+        # Source is internal.
+        if isInternal(dest):
+            # Destination is internal.
+            return IN_TO_IN
+        else:
+            # Destination is external
+            return OUT
+    else:
+        # Source is external.
+        if isInternal(dest):
+            # Destination is internal.
+            return IN
+        else:
+            # Destination is external
+            return OUT_TO_OUT
+    # ids_internal = ["INTERNAL", 'UTDALLAS - University of Texas at Dallas, US']
+    # try:
+    #     src = point['whois_owner_src_ip']
+    #     dest = point['whois_owner_dest_ip']
+    # except KeyError as e:
+    #     raise Exception("Data point " + str(point) + " has no data " + str(e))
+
+    # if (src in ids_internal) and (dest not in ids_internal):
+    #     # Internal to external
+    #     return OUT
+    # if (src not in ids_internal) and (dest in ids_internal):
+    #     # External to internal
+    #     return IN
+    # err = "Unknown flow direction for point " + str(point) + " with source " + str(src) + " and destination " + str(dest)
+    # print(err)
+    # return IN_TO_IN
 
 def localize_bytes(size):
     return "bytes x" + str(size)

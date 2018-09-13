@@ -36,7 +36,7 @@ def make_closure(function, arg2, flowdir, iptype):
 def init(argvs):
     global args
     global data
-    for f in [{'value': '1', 'name': 'in'}, {'value': '0', 'name': 'out'}]:
+    for f in [{'value': 1, 'name': 'in'}, {'value': 0, 'name': 'out'}]:
         for ip in ['src', 'dest']:
             options["_".join(["hist", f['name'], ip])] = make_closure(
                 ngraph.graph_hist, 'num', f['value'], ip + '_ip')
