@@ -20,7 +20,7 @@ def loadWhois():
 
 
 def saveWhois(whoisData):
-    print("Saving whois cache with " + str(len(whoisData)) + " entries")
+    print("Saving whois cache with " + str(len(whoisData)["ips"]) + " entries")
     j.save(whoisData, cachefilename)
 
 
