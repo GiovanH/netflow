@@ -8,8 +8,13 @@ elif [[ "$unamestr" == 'CYGWIN_NT-10.0' ]]; then
 	anaconda3="/cygdrive/c/ProgramData/anaconda3/python.exe -u "
 	files="../data/netflow/"
 fi
-# anaconda3="$anaconda3 -m cProfile -s cumtime"
-files="${files}day=20180910/netflow-000500.csv"
+#anaconda3="$anaconda3 -m cProfile -s cumtime"
+anaconda3="$anaconda3 -m memory_profiler "
+#files="${files}day=20180910/netflow-000500.csv"
+
+
+#files="${files}NetflowOut_$(date +%F)*.csv"
+files="${files}NetflowOut_2018-09-18_test.csv"
 
 logfile="./logs/tests.log"
 polynomial=4
