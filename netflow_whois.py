@@ -70,11 +70,12 @@ def populateDatabase(addresses, verbose=True, force=False):
                     # Mark record as bad
                     whoisData["ips"][ip]['good'] = False
                 processWhoisOwner(whoisData, ip, owner)
+                i += 1
                 # print("WHOIS: Acquired new data for ip " + ip + " with owner " + owner)
             except ipwhois.exceptions.IPDefinedError:
                 print("WHOIS: IP is a reserved internal address: " + ip)
                 processWhoisOwner(whoisData, ip, "INTERNAL")
-            except ipwhois.exceptions.HTTPLookupError:
+            except (ipwhois.exceptions.HTTPLookupError, ipwhois.exceptions.ASNRegistryError):
                 processWhoisOwner(whoisData, ip, "UNKNOWN")
                 whoisData["ips"][ip]['good'] = False
                 if verbose:
@@ -82,7 +83,6 @@ def populateDatabase(addresses, verbose=True, force=False):
                 # Save error report
                 j.json_save(traceback.format_exc(limit=2).split(
                     '\n'), "err/bad_ip/httplookup_" + ip)
-            i += 1
             if i % 120 == 0:
                 saveWhois(whoisData)
     saveWhois(whoisData)

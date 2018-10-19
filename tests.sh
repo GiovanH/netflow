@@ -1,20 +1,21 @@
 #!/bin/bash
+
 unamestr=$(uname)
-if [[ "$unamestr" == 'Linux' ]]; then
+if [ "$unamestr" == 'Linux' ]; then
 	anaconda3="/home/stg160130/anaconda3/bin/python3 -u	"
 	files="/data/netflow/"
 	export MPLBACKEND="agg"
-elif [[ "$unamestr" == 'CYGWIN_NT-10.0' ]]; then
+elif [ "$unamestr" == 'CYGWIN_NT-10.0' ]; then
 	anaconda3="/cygdrive/c/ProgramData/anaconda3/python.exe -u "
 	files="../data/netflow/"
 fi
-#anaconda3="$anaconda3 -m cProfile -s cumtime"
-anaconda3="$anaconda3 -m memory_profiler "
-#files="${files}day=20180910/netflow-000500.csv"
+# anaconda3="$anaconda3 -m cProfile -s cumtime"
+# anaconda3="$anaconda3 -m memory_profiler "
+# files="${files}day=20180910/netflow-000500.csv"
 
 
 #files="${files}NetflowOut_$(date +%F)*.csv"
-files="${files}NetflowOut_2018-09-18_test.csv"
+files="${files}*_test.csv"
 
 logfile="./logs/tests.log"
 polynomial=4

@@ -2,6 +2,18 @@
 # Seth Giovanetti
 
 
+# Ryan Ginstrom, cheap line count
+def mapcount(filename):
+    import mmap
+    f = open(filename, "r+")
+    buf = mmap.mmap(f.fileno(), 0)
+    lines = 0
+    readline = buf.readline
+    while readline():
+        lines += 1
+    return lines
+
+
 def simple_combine_data(data, sortField):
     return combine_data(data, lambda a, b: a[sortField] == b[sortField], sortField)
 
