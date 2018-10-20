@@ -2,15 +2,15 @@
 
 unamestr=$(uname)
 if [ "$unamestr" == 'Linux' ]; then
-	anaconda3="/home/stg160130/anaconda3/bin/python3 -u	"
+	anaconda3="/home/stg160130/anaconda3/bin/python3 "
 	files="/data/netflow/"
 	export MPLBACKEND="agg"
 elif [ "$unamestr" == 'CYGWIN_NT-10.0' ]; then
-	anaconda3="/cygdrive/c/ProgramData/anaconda3/python.exe -u "
+	anaconda3="/cygdrive/c/ProgramData/anaconda3/python.exe "
 	files="../data/netflow/"
 fi
 
-anaconda3="$anaconda3 -u"
+# anaconda3="$anaconda3 -u"
 # anaconda3="$anaconda3 -m cProfile -s cumtime"
 # anaconda3="$anaconda3 -m memory_profiler "
 # files="${files}day=20180910/netflow-000500.csv"

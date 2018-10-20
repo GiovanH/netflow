@@ -35,9 +35,9 @@ def loadCsv(globstr, hmgr, cap=-1):
                     if (i == cap):
                         break
                 except (ValueError, TypeError) as e:
-                    #print(e)
-                    #print("Row error on file " + filename + " row " + str(i))
-                    #print(row)
+                    # print(e)
+                    # print("Row error on file " + filename + " row " + str(i))
+                    # print(row)
                     # print("Skipping row")
                     # traceback.print_exc()
                     # break
