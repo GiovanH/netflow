@@ -10,8 +10,7 @@ DATA_VERSION = 1.1
 def loadWhois():
     try:
         whoisData = j.load(cachefilename)
-        print("Loaded whois cache with " +
-              str(len(whoisData["ips"])) + " entries")
+        print("Loaded whois cache with {0} entries.".format(len(whoisData["ips"])))
         return whoisData
     except FileNotFoundError:
         print("Warning! Whois database not found. It will be rebuilt as needed.")
@@ -20,7 +19,7 @@ def loadWhois():
 
 
 def saveWhois(whoisData):
-    print("Saving whois cache with " + str(len(whoisData["ips"])) + " entries")
+    print("Saving whois cache with {0} entries".format(len(whoisData["ips"])))
     j.save(whoisData, cachefilename)
 
 
@@ -31,7 +30,7 @@ def populateDatabase(addresses, verbose=True, force=False):
             # Validate cached data.
             ipdata = whoisData["ips"].get(ip)
             if ipdata is None:
-                raise KeyError("No cached data for IP " + ip)
+                raise KeyError("No cached data for IP {0}".format(ip))
             if not (force is False):
                 raise KeyError('Forcing update')
             # if ipdata.get('good') is not True:
@@ -63,9 +62,9 @@ def populateDatabase(addresses, verbose=True, force=False):
                 # If that still didn't work, we have a problem.
                 if owner is None:
                     if verbose:
-                        print("Can't get owner for IP " + ip + ", logging")
+                        print("Can't get owner for IP {0}, logging".format(ip))
                     # Save error report
-                    j.json_save(ipdata, "err/bad_ip/noowner_" + ip)
+                    j.json_save(ipdata, "err/bad_ip/noowner_{0}".format(ip))
                     owner = "UNKNOWN"
                     # Mark record as bad
                     whoisData["ips"][ip]['good'] = False
@@ -79,10 +78,10 @@ def populateDatabase(addresses, verbose=True, force=False):
                 processWhoisOwner(whoisData, ip, "UNKNOWN")
                 whoisData["ips"][ip]['good'] = False
                 if verbose:
-                    print("WHOIS: Error looking up IP address " + ip)
+                    print("WHOIS: Error looking up IP address {0}".format(ip))
                 # Save error report
                 j.json_save(traceback.format_exc(limit=2).split(
-                    '\n'), "err/bad_ip/httplookup_" + ip)
+                    '\n'), "err/bad_ip/httplookup_{0}".format(ip))
             if i % 120 == 0:
                 saveWhois(whoisData)
     saveWhois(whoisData)

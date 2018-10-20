@@ -9,6 +9,8 @@ elif [ "$unamestr" == 'CYGWIN_NT-10.0' ]; then
 	anaconda3="/cygdrive/c/ProgramData/anaconda3/python.exe -u "
 	files="../data/netflow/"
 fi
+
+anaconda3="$anaconda3 -u"
 # anaconda3="$anaconda3 -m cProfile -s cumtime"
 # anaconda3="$anaconda3 -m memory_profiler "
 # files="${files}day=20180910/netflow-000500.csv"
@@ -47,8 +49,8 @@ do
 		${moreargs} \
 		--regress $polynomial\
 		"${files}" \
-		icannpercent_out_dest icannpercent_out_src \
 		icannpercent_in_src  \
+		icannpercent_out_dest icannpercent_out_src \
 		icannstacktime_in_src icannstacktime_out_dest \
 		| tee -a ${logfile}
 	# for file in $files

@@ -3,51 +3,46 @@
 
 import argparse
 import sys
-import copy
 
 from pprint import pformat
 
 import netflow_csv as ncsv
 import netflow_graphing as ngraph
 import netflow_util as util
-
-# Init data store
-data = []
+import netflow_h5 as h5
 
 options = {
     "dump": (
-        lambda: dump(
-            copy.deepcopy(data)
-        )
+        lambda: dump(hmgr)
     ),
     "dumpargs": (
         lambda: print(",".join([l + "=" + util.sluggify(str(vars(args)[l])) for l in vars(args)]))
     ),
-    "oniondump": (lambda: oniondump(copy.deepcopy(data)))
+    "oniondump": (lambda: oniondump(hmgr))
 }
 
 
 def make_closure(function, arg2, flowdir, iptype):
     def call():
-        function(copy.deepcopy(data), vars(args)[arg2], flowdir, iptype)
+        function(hmgr, vars(args)[arg2], flowdir, iptype)
     return call
 
 
 def init(argvs):
     global args
-    global data
-    for f in [{'value': 1, 'name': 'in'}, {'value': 0, 'name': 'out'}]:
+    global hmgr
+    for flowdirs in [{'value': 1, 'name': 'in'}, {'value': 0, 'name': 'out'}]:
         for ip in ['src', 'dest']:
-            options["_".join(["hist", f['name'], ip])] = make_closure(
-                ngraph.graph_hist, 'num', f['value'], ip + '_ip')
-            options["_".join(["top", f['name'], ip])] = make_closure(
-                ngraph.graph_top, 'num', f['value'], ip + '_ip')
-            options["_".join(["ippercent", f['name'], ip])] = make_closure(
-                ngraph.graph_ippercent, 'percent', f['value'], ip + '_ip')
-            options["_".join(["icannpercent", f['name'], ip])] = make_closure(
-                ngraph.graph_icannpercent, 'percent', f['value'], ip + '_ip')
-            options["_".join(["icannstacktime", f['name'], ip])] = make_closure(
-                ngraph.graph_icannstacktime, 'num', f['value'], ip + '_ip')
+            options["_".join(["hist", flowdirs['name'], ip])] = make_closure(
+                ngraph.graph_hist, 'num', flowdirs['value'], ip + '_ip')
+            options["_".join(["top", flowdirs['name'], ip])] = make_closure(
+                ngraph.graph_top, 'num', flowdirs['value'], ip + '_ip')
+            options["_".join(["ippercent", flowdirs['name'], ip])] = make_closure(
+                ngraph.graph_ippercent, 'percent', flowdirs['value'], ip + '_ip')
+            options["_".join(["icannpercent", flowdirs['name'], ip])] = make_closure(
+                ngraph.graph_icannpercent, 'percent', flowdirs['value'], ip + '_ip')
+            options["_".join(["icannstacktime", flowdirs['name'], ip])] = make_closure(
+                ngraph.graph_icannstacktime, 'num', flowdirs['value'], ip + '_ip')
 
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
                                      epilog="Valid command values for cmd: \n" + "\n    ".join(key for key in options.keys()))
@@ -85,10 +80,9 @@ def init(argvs):
 
     # Hack: Fix cygwin paths
     # args.files = args.files.replace("/", "\\")
-    # Read data in from CSV files.
-    # Data is based on a file glob to CSV files that are expected to be netflow exports.
-
-    data = ncsv.opencsv(args.files, args.cap)
+    hmgr = h5.H5Manager()
+    # Load CSV files with the file manager.
+    ncsv.loadCsv(args.files, hmgr, cap=args.cap)
 
 
 def dump(data):
@@ -104,6 +98,7 @@ def oniondump(data):
 if __name__ == "__main__":
     init(sys.argv[1:])
     # try:
+    print(hmgr)
     for c in args.cmds:
         print('####################################')
         print('###    ' + c)

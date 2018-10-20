@@ -6,11 +6,11 @@ import glob
 import netflow_util as util
 import sys
 import progressbar
+# import traceback
 from datetime import datetime
 
 
-def opencsv(globstr, cap):
-    data = []
+def loadCsv(globstr, hmgr, cap=-1):
     # print(globstr)
     filenames = glob.glob(globstr)
     # print(filenames)
@@ -20,27 +20,26 @@ def opencsv(globstr, cap):
         with open(filename) as csvfile:
             reader = csv.DictReader(csvfile)
             totalLines = util.mapcount(filename)
-            sheet = []
             i = 1
             bad_rows = 0
             bar = progressbar.ProgressBar(max_value=totalLines, redirect_stdout=True)
             for row in reader:
+                i += 1
                 try:
-                    i += 1
                     row['filename'] = filename
                     row['linenum'] = str(i)
-                    row['bytes_in'] = int(row['bytes_in'])
                     row['time'] = datetime.fromtimestamp(int(row['_time'])).hour
 
                     # Let's only read the fields we're interested in, to save time.
-                    sheet.append({field: row[field] for field in ['bytes_in', 'dest_ip', 'src_ip', 'linenum', 'time', 'filename']})
+                    hmgr.readFlowRow(row)
                     if (i == cap):
                         break
-                except ValueError as e:
-                    # print(e)
-                    # print("Row error on file " + filename + " row " + str(i))
-                    # print(row)
+                except (ValueError, TypeError) as e:
+                    #print(e)
+                    #print("Row error on file " + filename + " row " + str(i))
+                    #print(row)
                     # print("Skipping row")
+                    # traceback.print_exc()
                     # break
                     bad_rows += 1
                     pass
@@ -48,7 +47,3 @@ def opencsv(globstr, cap):
             bar.finish()
         print(bad_rows, "bad rows in file.")
         sys.stdout.flush()
-        sheet = util.multi_combine_data(sheet, ['dest_ip', 'src_ip', 'time', 'filename'])
-        data += sheet
-    # print(data)
-    return data
