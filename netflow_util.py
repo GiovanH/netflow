@@ -14,12 +14,29 @@ def mapcount(filename):
     return lines
 
 
-def simple_combine_data(data, sortField):
-    return combine_data(data, lambda a, b: a[sortField] == b[sortField], sortField)
+def simple_combine_data(data, sumField, matchField):
+    return multi_combine_data(data, sumField, [matchField])
+    #return combine_data(data, lambda a, b: a[sortField] == b[sortField], sortField)
 
 
-def multi_combine_data(data, sortFields):
-    return combine_data(data, lambda a, b: all(a[sortField] == b[sortField] for sortField in sortFields), sortFields[0])
+def multi_combine_data(data, sumField, matchFields):
+    newData = {}
+    length = len(matchFields)
+    for point in data:
+        key = tuple(point[x] for x in matchFields)
+        value = point[sumField]
+        if newData.get(key):
+            newData[key] += value
+        else:
+            newData.update({key: value})
+
+    def makeEntry(tup):
+        r = {matchFields[i]: tup[i] for i in range(length)}
+        r.update({sumField: newData[tup]})
+        return r
+    return [makeEntry(tup) for tup in newData]
+
+    # return combine_data(data, lambda a, b: all(a[sortField] == b[sortField] for sortField in sortFields), sortFields[0])
     # def e(a, b):
     #     all(a[f] == b[f] for f in sortFields)
     # for sort in sortFields:
@@ -93,11 +110,17 @@ def compress_bytes(data, compress_size):
         point['bytes_in'] = point['bytes_in'] / compress_size
 
 
-def flowdir(point, check=0):
-    IN = 1
+flowdirs = {
+    1: {
+        'name': "incoming"
+    }
+}
+
+def flowdirOfFlow(point, check=0):
     OUT = 0
-    IN_TO_IN = 2
-    OUT_TO_OUT = 3
+    IN = 1
+    OUT_TO_OUT = 2
+    IN_TO_IN = 3
 
     src = point['src_ip']
     dest = point['dest_ip']

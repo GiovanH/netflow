@@ -202,6 +202,8 @@ def graph_ippercent(data, percent, flowdir, ip_type):
 
 # Graph cumulative traffic of the top %[percent] of traffic contributors. Filtered by flowdir and ip_type.
 def graph_icannpercent(h5mgr, percent, flowdir, ip_type):
+
+    # Boilerplate:
     # Write a unique name for this command.
     command = "_".join(['icannpercent', str(percent),
                         ('incoming' if flowdir == 1 else 'outgoing'), ip_type])
@@ -211,23 +213,27 @@ def graph_icannpercent(h5mgr, percent, flowdir, ip_type):
         ('incoming' if flowdir == 1 else 'outgoing') + \
         ", top " + str(percent) + '% of owners, by ' + ip_type
 
-    # Filter out records that do not match the required flow direction.
-    # criteria = "(flowdir == 3)"
+    # The algorithm:
+    # 1. Filter out records that do not match the flow direction in question
+    # 2. Merge flows by IPs, owners
+    # 3. Filter by top percent
+    # 4. Make a graph of BYTES vs OWNER.
 
+    # Get data that matches our flow direction
     data = [
-        {f: x[f] for f in ['bytes_in', 'dest_ip', 'src_ip', 'linenum', 'time', 'filename', 'flowdir']}
+        {f: x[f] for f in ['bytes_in', ip_type, 'time']}
         for x in h5mgr.flowTable.where("(flowdir == {0})".format(flowdir))
     ]
     # print(data)
 
     # Group records by IP address only.
-    data = util.simple_combine_data(data, ip_type)
+    data = util.simple_combine_data(data, 'bytes_in', ip_type)
 
     # Append whois data to the data set
-    whois.appendOwnersToData(data)
+    whois.appendOwnerToData(data, ip_type)
 
     # Group records by whois owner.
-    data = util.simple_combine_data(data, "whois_owner_" + ip_type)
+    data = util.simple_combine_data(data, 'bytes_in', "whois_owner_" + ip_type)
 
     # Take top percent
     data = util.top_percent(data, percent, 'bytes_in')
@@ -238,17 +244,18 @@ def graph_icannpercent(h5mgr, percent, flowdir, ip_type):
             data), titleappend="_verbose_ip_data")
 
     # Sort reduced data set
-    data = sorted(data, key=lambda k: k['bytes_in'])[::-1]
+    # I don't think this serves any purpose, because we've already handled all the filtering.
+    # data = sorted(data, key=lambda k: k['bytes_in'])[::-1]
 
-    if global_args.compress_size is not None:
-        util.compress_bytes(data, global_args.compress_size)
+    # if global_args.compress_size is not None:
+    #     util.compress_bytes(data, global_args.compress_size)
 
     # Create seperate X and Y arrays based on sort fields
     graphdatay = np.array([point['bytes_in'] for point in data])
     graphdatax = np.array([point["whois_owner_" + ip_type] for point in data])
 
     # Log which whois entities account for which rank.
-    logtxt = 'Top ' + str(percent) + '% of contributors: \n' + '\n'.join(
+    logtxt = 'Top ' + str(percent) + '\% of contributors: \n' + '\n'.join(
         [graphdatax[i] + "\t" + str(graphdatay[i]) +
          "\t" for i in range(0, len(graphdatax))]
     )
@@ -269,7 +276,7 @@ def graph_icannpercent(h5mgr, percent, flowdir, ip_type):
     )
 
 
-def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True):
+def graph_icannstacktime(h5mgr, topn, flowdir, ip_type, overlap=True, stack=True):
     command = "_".join(['icannstacktime', str(topn),
                         ('incoming' if flowdir == 1 else 'outgoing'), ip_type])
     print(command)
@@ -278,20 +285,22 @@ def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True)
         ", top " + str(topn) + ' owners, by ' + ip_type
 
     # Filter out records that do not match the required flow direction.
-    data = [i for i in data if util.flowdir(i) == flowdir]
+    data = [
+        {f: x[f] for f in ['bytes_in', ip_type, 'time']}
+        for x in h5mgr.flowTable.where("(flowdir == {0})".format(flowdir))
+    ]
 
     # Group by IP, retaining time info
-    data = util.multi_combine_data(data, [ip_type, 'time'])
-    # Append whois data to this reduced data set
-    whois.appendOwnersToData(data)
+    data = util.multi_combine_data(data, 'bytes_in', [ip_type, 'time'])
+
+    # Append whois data to the data set
+    whois.appendOwnerToData(data, ip_type)
+
     # Group by whois data, retaining time info
-    data = util.multi_combine_data(data, ["whois_owner_" + ip_type, 'time'])
+    data = util.multi_combine_data(data, 'bytes_in', ["whois_owner_" + ip_type, 'time'])
 
-    if global_args.compress_size is not None:
-        util.compress_bytes(data, global_args.compress_size)
-
-    # graphText(logtxt, plt)
-    # savelog(global_args.files, command, logtxt)
+    # if global_args.compress_size is not None:
+    #     util.compress_bytes(data, global_args.compress_size)
 
     # Our X values will be TIME.
     # data = sorted(data, key=lambda k: k['time'])
@@ -304,7 +313,7 @@ def graph_icannstacktime(data, topn, flowdir, ip_type, overlap=True, stack=True)
         [
             point["whois_owner_" + ip_type] for point in sorted(
                 # We care about the top topn OVERALL, not the top for any time, so we need to strip time data.
-                util.simple_combine_data(data, "whois_owner_" + ip_type), key=lambda k: k['bytes_in']
+                util.simple_combine_data(data, 'bytes_in', "whois_owner_" + ip_type), key=lambda k: k['bytes_in']
             )[-topn:][::-1]
         ]
     ))
@@ -433,8 +442,8 @@ def graph_hist(data, topn, flowdir, ip_type):
     # Sorts the list by bytes_in, gets the #n... #2, #1 entries, then reverses that list.
     data = sorted(data, key=lambda k: k['bytes_in'])[-topn:][::-1]
 
-    if global_args.compress_size is not None:
-        util.compress_bytes(data, global_args.compress_size)
+    # if global_args.compress_size is not None:
+    #     util.compress_bytes(data, global_args.compress_size)
 
     # Create seperate X and Y arrays based on sort fields
     graphdatay = np.array([point['bytes_in'] for point in data])

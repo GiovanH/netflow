@@ -27,7 +27,7 @@ class H5Manager():
         flow = self.flowTable.row
         for column in flowFields:
             flow[column] = rowDict[column]
-        flow['flowdir'] = util.flowdir(rowDict)
+        flow['flowdir'] = util.flowdirOfFlow(rowDict)
         # Insert a new particle record
         flow.append()
 
