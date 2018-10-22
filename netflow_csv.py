@@ -6,11 +6,10 @@ import glob
 import netflow_util as util
 import sys
 import progressbar
-# import traceback
 from datetime import datetime
 
 
-def loadCsv(globstr, hmgr, cap=-1):
+def loadCsv(globstr, hmgr, cap=-1, compress_size=1):
     # print(globstr)
     filenames = glob.glob(globstr)
     # print(filenames)
@@ -29,8 +28,9 @@ def loadCsv(globstr, hmgr, cap=-1):
                     row['filename'] = filename
                     row['linenum'] = str(i)
                     row['time'] = datetime.fromtimestamp(int(row['_time'])).hour
+                    row['bytes_in'] = int(row['bytes_in']) / compress_size
 
-                    # Let's only read the fields we're interested in, to save time.
+                    # Feed the row to the h5mgr
                     hmgr.readFlowRow(row)
                     if (i == cap):
                         break
@@ -39,6 +39,7 @@ def loadCsv(globstr, hmgr, cap=-1):
                     # print("Row error on file " + filename + " row " + str(i))
                     # print(row)
                     # print("Skipping row")
+                    # import traceback
                     # traceback.print_exc()
                     # break
                     bad_rows += 1

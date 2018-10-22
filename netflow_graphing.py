@@ -194,7 +194,7 @@ def graph_ippercent(data, percent, flowdir, ip_type):
         graphtitle,
         'Top contributors',
         list(range(1, len(graphdatax) + 1)),
-        'Total ' + 'bytes_in',
+        'Total ' + util.localize_bytes(global_args.compress_size),
         np.cumsum(graphdatay),
         regress=global_args.regress
     )
@@ -255,7 +255,7 @@ def graph_icannpercent(h5mgr, percent, flowdir, ip_type):
     graphdatax = np.array([point["whois_owner_" + ip_type] for point in data])
 
     # Log which whois entities account for which rank.
-    logtxt = 'Top ' + str(percent) + '\% of contributors: \n' + '\n'.join(
+    logtxt = 'Top ' + str(percent) + '% of contributors: \n' + '\n'.join(
         [graphdatax[i] + "\t" + str(graphdatay[i]) +
          "\t" for i in range(0, len(graphdatax))]
     )
@@ -270,7 +270,7 @@ def graph_icannpercent(h5mgr, percent, flowdir, ip_type):
         graphtitle,
         'Top contributors',
         list(range(1, len(graphdatax) + 1)),
-        'Total ' + 'bytes_in',
+        'Total ' + util.localize_bytes(global_args.compress_size),
         np.cumsum(graphdatay),
         regress=global_args.regress
     )

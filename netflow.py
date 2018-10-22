@@ -82,7 +82,7 @@ def init(argvs):
     # args.files = args.files.replace("/", "\\")
     hmgr = h5.H5Manager()
     # Load CSV files with the file manager.
-    ncsv.loadCsv(args.files, hmgr, cap=args.cap)
+    ncsv.loadCsv(args.files, hmgr, cap=args.cap, compress_size=args.compress_size)
 
 
 def dump(data):
