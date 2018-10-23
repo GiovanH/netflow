@@ -37,3 +37,12 @@ class H5Manager():
     def flowWhere(self, criteria):
         table = self.h5file.root.flowtable
         return table.where(criteria)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type_, value, traceback):
+        self.__del__()
+
+    def __del__(self):
+        self.h5file.close()
