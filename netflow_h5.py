@@ -13,8 +13,9 @@ class Flow(tables.IsDescription):
     whois_owner_src_ip = tables.StringCol(64)
     flowdir = tables.Int8Col()
 
-
-flowFields = ['bytes_in', 'dest_ip', 'src_ip', 'linenum', 'time', 'filename']
+csvFields = ['bytes_in', 'dest_ip', 'src_ip', '_time']
+pseudoFields = ['linenum', 'time', 'filename']
+flowFields = csvFields + pseudoFields
 
 
 class H5Manager():
@@ -25,11 +26,16 @@ class H5Manager():
 
     def readFlowRow(self, rowDict):
         flow = self.flowTable.row
-        for column in flowFields:
-            flow[column] = rowDict[column]
-        flow['flowdir'] = util.flowdirOfFlow(rowDict)
-        # Insert a new particle record
-        flow.append()
+        # for column in flowFields:
+        try:
+            for column in csvFields:
+                flow[column] = rowDict[column]
+            flow['flowdir'] = util.flowdirOfFlow(rowDict)
+            # Insert a new particle record
+            flow.append()
+        except TypeError:
+            pass
+            #Bad record, missing data or smth
 
     def flush(self):
         self.flowTable.flush()

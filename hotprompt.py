@@ -13,9 +13,10 @@ import time
 import pandas as pd
 import glob
 
-globs = "/data/netflow/*test.csv"
+globs = "../data/netflow/*test.csv"
 
-def benchmark(f, runs):
+def benchmark(f, runs, label):
+    print("Benchmarking method: \"{}\"".format(label))
     stopwatch = []
     for i in range(0, runs):
         print("Running run {0}".format(i))
@@ -36,14 +37,25 @@ def vanilla():
     with h5.H5Manager() as hmgr:
         ncsv.loadCsv(globs, hmgr)
 
+
+def pandaRead():
+    for f in glob.glob(globs):
+        pd.read_csv(f, usecols=h5.csvFields).to_hdf('store_tl.h5','table', append=True)
+    df2 = pd.read_hdf('store_tl.h5', 'table')
+    print(df2)
+    
+
 def pandaEach():
     for f in glob.glob(globs):
-        p = pd.read_csv(f, usecols=h5.flowFields)
-        for row in p:
-            hmgr.readFlowRow(row)
+        with h5.H5Manager() as hmgr:
+            p = pd.read_csv(f, usecols=h5.csvFields)
+            for row_index, row in p.iterrows():
+                hmgr.readFlowRow(row)
 
-benchmark(pandaEach, 3)
-benchmark(vanilla, 3)
+
+# benchmark(pandaEach, 3, "pandaEach (iter)")
+benchmark(pandaRead, 3, "pandaRead")
+benchmark(vanilla, 3, "vanilla")
 # glob = "../20180110/*.csv"
 # netflow.init(["--nowindow", glob])
 
