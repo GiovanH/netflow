@@ -7,14 +7,15 @@ class Flow(tables.IsDescription):
     dest_ip = tables.StringCol(16)
     src_ip = tables.StringCol(16)
     linenum = tables.Int32Col()
-    time = tables.TimeCol()
+    _time = tables.TimeCol()
+    time = tables.Int8Col()
     filename = tables.StringCol(128)
     whois_owner_dest_ip = tables.StringCol(64)
     whois_owner_src_ip = tables.StringCol(64)
     flowdir = tables.Int8Col()
 
 csvFields = ['bytes_in', 'dest_ip', 'src_ip', '_time']
-pseudoFields = ['linenum', 'time', 'filename']
+pseudoFields = ['linenum', 'filename', 'time']
 flowFields = csvFields + pseudoFields
 
 
