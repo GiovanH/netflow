@@ -201,7 +201,7 @@ def graph_ippercent(data, percent, flowdir, ip_type):
 
 
 # Graph cumulative traffic of the top %[percent] of traffic contributors. Filtered by flowdir and ip_type.
-def graph_icannpercent(h5mgr, percent, flowdir, ip_type):
+def graph_icannpercent(data, percent, flowdir, ip_type):
 
     # Boilerplate:
     # Write a unique name for this command.
@@ -219,10 +219,13 @@ def graph_icannpercent(h5mgr, percent, flowdir, ip_type):
     # 3. Filter by top percent
     # 4. Make a graph of BYTES vs OWNER.
 
+    # Calculate flow direction and append to our data frame
+    data['flowdir'] = util.getFlowDir(data['src_ip'], data['dest_ip'])
+
     # Get data that matches our flow direction
     data = [
         {f: x[f] for f in ['bytes_in', ip_type, 'time']}
-        for x in h5mgr.flowTable.where("(flowdir == {0})".format(flowdir))
+        for x in data.where("(flowdir == {0})".format(flowdir))
     ]
     # print(data)
 

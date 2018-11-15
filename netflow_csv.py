@@ -8,43 +8,54 @@ import sys
 import progressbar
 from datetime import datetime
 
+import numpy as np
+import ipdtype as ipf
+import pandas as pd
 
-def loadCsv(globstr, hmgr, cap=-1, compress_size=1):
-    # print(globstr)
+dtypes = {
+    '_time': np.uint32,
+    'bytes_in': np.float32
+}
+convs = {
+    'dest_ip': ipf.stou,
+    'src_ip': ipf.stou
+}
+cols = ['_time', 'bytes_in', 'dest_ip', 'src_ip']
+
+
+def pandaReadToDFChunky(filenames):
+    # np.array([int(m) for m in ip.split(".")], dtype=np.uint8)
+
+    chunksize = (8**7)
+    # Store a list of dataframes: one dataframe per file
+    dfs = []
+    with progressbar.ProgressBar(max_value=len(filenames)) as bar:
+        i_bar = 0
+        for f in filenames:
+            for chunk in pd.read_csv(
+                f,
+                usecols=cols,
+                dtype=dtypes,
+                converters=convs,
+                chunksize=chunksize
+            ):
+                # Append chunk to list
+                dfs.append(chunk)
+            i_bar += 1
+            bar.update(i_bar)
+    df = pd.concat(dfs, ignore_index=True)
+
+    print("### Dropping bad values of type {}".format(ipf.bad))
+    df = df[
+        (df['src_ip'] != ipf.bad) |
+        (df['dest_ip'] != ipf.bad)
+    ]
+    return df
+
+
+def loadCsv(globstr):
+    print(globstr)
     filenames = glob.glob(globstr)
+    DF = pandaReadToDFChunky(filenames)
     # print(filenames)
-    for filename in filenames:
-        sys.stdout.flush()
-        print("Reading file ", filename)
-        with open(filename) as csvfile:
-            reader = csv.DictReader(csvfile)
-            totalLines = util.mapcount(filename)
-            i = 1
-            bad_rows = 0
-            bar = progressbar.ProgressBar(max_value=totalLines, redirect_stdout=True)
-            for row in reader:
-                i += 1
-                try:
-                    row['filename'] = filename
-                    row['linenum'] = str(i)
-                    row['time'] = datetime.fromtimestamp(int(row['_time'])).hour
-                    row['bytes_in'] = int(row['bytes_in']) / compress_size
-
-                    # Feed the row to the h5mgr
-                    hmgr.readFlowRow(row)
-                    if (i == cap):
-                        break
-                except (ValueError, TypeError) as e:
-                    # print(e)
-                    # print("Row error on file " + filename + " row " + str(i))
-                    # print(row)
-                    # print("Skipping row")
-                    # import traceback
-                    # traceback.print_exc()
-                    # break
-                    bad_rows += 1
-                    pass
-                bar.update(i)
-            bar.finish()
-        print(bad_rows, "bad rows in file.")
-        sys.stdout.flush()
+    return DF

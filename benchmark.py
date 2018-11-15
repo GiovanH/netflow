@@ -20,7 +20,8 @@ import ipdtype as ipf
 
 # globs = "/data/netflow/NetflowOut_2018-10-31_*.csv"
 # globs = "/data/netflow/TestNetflowOut*.csv"
-globs = "/data/netflow/DF.csv"
+globs = "G:/Stash/Netflow/*.csv"
+# globs = "G:/Stash/Netflow/NetflowOut_2018-11-11_00-05-00.csv"
 # print(globs)
 
 
@@ -28,7 +29,7 @@ def dumpMem():
     fmtstr = "{}M/{}M, {:03.2f}%"
     factor = (2**20)
     totalMemPerc = 0
-    totalMemThreshhold = 120
+    totalMemThreshhold = 160
     for m in [psutil.virtual_memory, psutil.swap_memory]:
         perc = (m().used / m().total) * 100
         print(fmtstr.format(
@@ -135,7 +136,6 @@ def pandaReadFromHDF():
     df2.head()
 
 
-
 dtypes = {
     '_time': np.uint32,
     'bytes_in': np.float32
@@ -187,20 +187,40 @@ def pandaReadToDFSmallFloat():
 def pandaReadToDFChunky():
     # np.array([int(m) for m in ip.split(".")], dtype=np.uint8)
 
-    # Store a list of dataframes: one dataframe per file
-    dfs = []
     chunksize = (8**7)
-    for f in glob.glob(globs):
-        for chunk in pd.read_csv(
-            f,
-            usecols=cols,
-            dtype=dtypes,
-            converters=convs,
-            chunksize=chunksize
-        ):
-            # Append chunk to list
-            dfs.append(chunk)
+    # Store a list of dataframes: one dataframe per file
+    # dfs = []
+    # for f in glob.glob(globs):
+    #     for chunk in pd.read_csv(
+    #         f,
+    #         usecols=cols,
+    #         dtype=dtypes,
+    #         converters=convs,
+    #         chunksize=chunksize
+    #     ):
+    #         # Append chunk to list
+    #         dfs.append(chunk)
 
+    dfs = \
+        [
+            inner for outer in
+            [
+                chunk for chunk in
+                [
+                    pd.read_csv(
+                        f,
+                        usecols=cols,
+                        dtype=dtypes,
+                        converters=convs,
+                        chunksize=chunksize
+                    )
+                    for f in glob.glob(globs)
+                ]
+            ]
+            for inner in outer
+        ]
+
+    # ...that might be worse, actually. geez.
     return finalizeList(dfs)
 
 
@@ -257,12 +277,12 @@ def pandaReadToDFABTestA():
     for f in glob.glob(globs):
         chunk = pd.read_csv(
             f,
-            #engine='c',
+            # engine='c',
             usecols=cols,
-            dtype=dtypes,
+            dtype=dtypes
             # parse_dates=False,
             # compression=None,
-            converters=convs
+            # converters=convs
         )
         # Append chunk to list
         dfs.append(chunk)
@@ -279,7 +299,7 @@ def pandaReadToDFABTestB():
     for f in glob.glob(globs):
         chunk = pd.read_csv(
             f,
-            #engine='python',
+            # engine='python',
             usecols=cols,
             converters=convs,
             dtype=dtypes
@@ -296,12 +316,12 @@ def pandaReadToDFABTestB():
 runs = 1
 
 # benchmark(ipf.tests, runs, "iptests")
-# benchmark(pandaReadToDFChunky, runs, "Chunked")
+# benchmark(pandaReadToDF, runs, "Plain")
+benchmark(pandaReadToDFChunky, runs, "Chunked")
 # benchmark(pandaReadToDFSmallFloat, runs, "Small float")
 # benchmark(pandaReadToDFThreaded, runs, "Threaded")
 # benchmark(pandaReadToHDF, runs, "pandaReadToHDF")
-benchmark(pandaReadToDF, runs, "Plain")
-benchmark(pandaReadToDFDropDuring, runs, "Drop During")
+# benchmark(pandaReadToDFDropDuring, runs, "Drop During")
 # benchmark(pandaReadToHDF, runs, "pandaReadToHDF")
 
 # benchmark(pandaReadToDFABTestA, runs, "NoConv")

@@ -16,7 +16,7 @@ def mapcount(filename):
 
 def simple_combine_data(data, sumField, matchField):
     return multi_combine_data(data, sumField, [matchField])
-    #return combine_data(data, lambda a, b: a[sortField] == b[sortField], sortField)
+    # return combine_data(data, lambda a, b: a[sortField] == b[sortField], sortField)
 
 
 def multi_combine_data(data, sumField, matchFields):
@@ -116,14 +116,18 @@ flowdirs = {
     }
 }
 
-def flowdirOfFlow(point, check=0):
-    OUT = 0
-    IN = 1
-    OUT_TO_OUT = 2
-    IN_TO_IN = 3
 
+def flowdirOfFlow(point, check=0):
     src = point['src_ip']
     dest = point['dest_ip']
+    return flowdirOfFlow(src, dest, check=check)
+
+
+OUT = 0
+IN = 1
+OUT_TO_OUT = 2
+IN_TO_IN = 3
+def getFlowDir(src, dest, check=0):
 
     def isInternal(ip):
         return ip.find("10.") == 0
@@ -160,6 +164,7 @@ def flowdirOfFlow(point, check=0):
     # err = "Unknown flow direction for point " + str(point) + " with source " + str(src) + " and destination " + str(dest)
     # print(err)
     # return IN_TO_IN
+
 
 def localize_bytes(size):
     return "bytes x" + str(size)

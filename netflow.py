@@ -13,24 +13,24 @@ import netflow_h5 as h5
 
 options = {
     "dump": (
-        lambda: dump(hmgr)
+        lambda: dump(data)
     ),
     "dumpargs": (
         lambda: print(",".join([l + "=" + util.sluggify(str(vars(args)[l])) for l in vars(args)]))
     ),
-    "oniondump": (lambda: oniondump(hmgr))
+    "oniondump": (lambda: oniondump(data))
 }
 
 
 def make_closure(function, arg2, flowdir, iptype):
     def call():
-        function(hmgr, vars(args)[arg2], flowdir, iptype)
+        function(data, vars(args)[arg2], flowdir, iptype)
     return call
 
 
 def init(argvs):
     global args
-    global hmgr
+    global data
     for flowdirs in [{'value': 1, 'name': 'in'}, {'value': 0, 'name': 'out'}]:
         for ip in ['src', 'dest']:
             options["_".join(["hist", flowdirs['name'], ip])] = make_closure(
@@ -78,11 +78,8 @@ def init(argvs):
 
     ngraph.global_args = args
 
-    # Hack: Fix cygwin paths
-    # args.files = args.files.replace("/", "\\")
-    hmgr = h5.H5Manager()
     # Load CSV files with the file manager.
-    ncsv.loadCsv(args.files, hmgr, cap=args.cap, compress_size=args.compress_size)
+    data = ncsv.loadCsv(args.files)
 
 
 def dump(data):
@@ -98,7 +95,6 @@ def oniondump(data):
 if __name__ == "__main__":
     init(sys.argv[1:])
     # try:
-    print(hmgr)
     for c in args.cmds:
         print('####################################')
         print('###    ' + c)
